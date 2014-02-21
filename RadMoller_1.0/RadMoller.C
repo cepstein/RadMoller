@@ -44,7 +44,7 @@ double mCSfunc(double x, double dE)
             //Exponentiating: CS_soft = CS_tree x exp(delta), with delta = soft correction / CS_tree
             //Instead of 1 + delta, it is exp(delta), to account for multiple soft photons
             //Includes factor of 2*pi*sin(theta) to make it d_sigma/d_theta
-        mCS = 2.0*pi*sin(x)*2.0*pi*sin(x)*Lumi*pow(1.97e-11,2)*tree_cs(x)*exp(corr_soft_tsai(x,dE));
+        mCS = 2.0*pi*sin(x)*Lumi*pow(1.97e-11,2)*tree_cs(x)*exp(corr_soft_tsai(x,dE));
     }
     else {
       cout<<"Error: soft_flag not properly set."<<endl;
@@ -84,17 +84,17 @@ int main(int argc, char* argv[])
         fprintf(eFile,"Weight\tP1x\tP1y\tP1z\tP2z\tP2y\tP2z\tKx\tKy\tKz\n");
     }
 
-    TH2D  *hst_xy = new TH2D("hst_xy" ,  "Scattered Electron Energy vs. Angle", 90,0,90,501,0.5,100 );
-    TH2D *ptpz = new TH2D("ptpz", "Electron Pt vs Pz",104,0,102,50,0,10);
-    TH2D *ptpzg = new TH2D("ptpzg", "Photon Pt vs Pz",104,0,102,50,0,10);
+    TH2D  *hst_xy = new TH2D("hst_xy" ,  "Scattered Electron Energy vs. Angle", 90,0,90,501,0.5,Ebeam);
+    TH2D *ptpz = new TH2D("ptpz", "Electron Pt vs Pz",104,0,Ebeam,50,0,Ebeam/10);
+    TH2D *ptpzg = new TH2D("ptpzg", "Photon Pt vs Pz",104,0,Ebeam,50,0,Ebeam/10);
     TH2D *aa = new TH2D("aa","e1 Angle vs e2 Angle",180,0,90,180,0,90);
-    TH2D *pp = new TH2D("pp","e1 Momentum vs e2 Momentum",199,0.5,100,199,0.5,100);
+    TH2D *pp = new TH2D("pp","e1 Momentum vs e2 Momentum",199,0.5,Ebeam,199,0.5,Ebeam);
     TH2D *eg = new TH2D("eg","e1 Angle vs Photon Angle",360,0,180,180,0,90);
-    TH1D *kk = new TH1D("kk","Ek distribution",50,0,100);
+    TH1D *kk = new TH1D("kk","Ek distribution",50,0,Ebeam);
     TH1D *CSint = new TH1D("CSint","Photon ",100,0.004,0.008);
     TH1D *w_int = new TH1D("w_int","Electron Angular Dist",89,0.5,89.5);
     TH1D *ph_angles = new TH1D("ph_angles","Photon Angular Dist",89,0.5,89.5);
-    TH2D *ph_erg = new TH2D("ph_erg","Photon Energy Angular Dist",89,0.5,89.5,101,0,100);
+    TH2D *ph_erg = new TH2D("ph_erg","Photon Energy Angular Dist",89,0.5,89.5,101,0,Ebeam);
         
     TNtuple *radEve_t = new TNtuple("radEve_t", "Radiative Events", "p1x:p1y:p1z:p2x:p2y:p2z:k1x:k1y:k1z:weight");
     TNtuple *softEve_t = new TNtuple("softEve_t", "Soft Corrected Events", "p1x:p1y:p1z:p2x:p2y:p2z:weight");
@@ -218,7 +218,7 @@ int main(int argc, char* argv[])
             q2->Boost(cm->BoostVector());
             TLorentzVector *k = new TLorentzVector(*cm-*q1-*q2);
 
-            weight = 2.*dSigmahdEkdTkdTqr(Ek,tk,tqr,pqr,q1,q2,k)\
+            weight = 2.*dSigmahdEkdTkdTqr(Ek,tk,tqr,pqr,q1,q2,k)/nEve\
             *ekWeight*tkWeight*tqrWeight*pqrWeight;
                 
             if (weight<0){cout<<"Error! Negative Weight: "<<weight<<endl;}
@@ -253,7 +253,7 @@ int main(int argc, char* argv[])
             
         if (pickProc >0.5){
 
-            weight = 2.*mCSfunc(xe,dE)*(pi-2.*xeCut);
+            weight = 2.*mCSfunc(xe,dE)*(pi-2.*xeCut)/nEve;
                 
             TLorentzVector *q1cm = new TLorentzVector(Pcmp*sin(xe)*cos(phik),\
                 Pcmp*sin(xe)*sin(phik),Pcmp*cos(xe),Ecmp);
