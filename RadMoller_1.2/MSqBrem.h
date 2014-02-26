@@ -1,10 +1,10 @@
-double Mh2(TLorentzVector *p1, TLorentzVector *p2, TLorentzVector *q1, TLorentzVector *q2, TLorentzVector *k)
-{
-  double kp1 = k->Dot(*p1);
-  double kp2 = k->Dot(*p2);
-  double kp3 = k->Dot(*q1);
-  double p1p2 = p1->Dot(*p2);
-  double p1p3 = p1->Dot(*q1);
+double RadMoller_Gen::Mh2(TLorentzVector *p1, TLorentzVector *p2,\
+ TLorentzVector *q1, TLorentzVector *q2, TLorentzVector *k){
+  kp1 = k->Dot(*p1);
+  kp2 = k->Dot(*p2);
+  kp3 = k->Dot(*q1);
+  p1p2 = p1->Dot(*p2);
+  p1p3 = p1->Dot(*q1);
 
   return (pow(ec,6)*(((128*(-56*pow(me,6) + 
               32*p1p2*(kp3*p1p2 - 

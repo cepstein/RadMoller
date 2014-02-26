@@ -1,6 +1,6 @@
 Radiative Moller Generator
 Charles Epstein, MIT
-Version 1.1, February 2014
+Version 1.2, February 2014
 
 
 ===	Overview	===
@@ -11,7 +11,7 @@ Soft-corrected elastic events-
 
 Accounts for soft radiative corrections, ie σ'=(1+δ)σ —-> σ'=exp(δ)σ where soft (undetectable) photons are emitted.  The exponentiation	accounts for the effects of multiple soft photons.
 
-The correction factor is user-selectable, and consists of the corrections of either Tsai (1960) or Denner & Pozzorini (1999).  The latter is more relevant at high energies and includes weak interaction effects.
+The correction factor consists of the corrections of Tsai (1960).  Previously included was the option for the corrections of Denner & Pozzorini (1999), which are temporarily removed from the release.  The latter is more relevant at high energies and includes weak interaction effects.
 
 Bremsstrahlung events-
 
@@ -34,38 +34,37 @@ where [nEve] is the desired number of events.  It is recommended to keep this in
 
 ===	Usage		===
 
-User-specified parameters are set in "vars.h".  They are:
+User-specified parameters are set in int main().  They are:
 
-const int soft_flag = 1; //0 = Denner & Pozzorini, 1 = Tsai
-const int root_flag = 1; //1 = Output TNtuple of event parameters
-const int txt_flag = 1;  //1 = Output txt file of event parameters
+int root_flag = 1; //1 = Output TNtuple of event parameters
+int txt_flag = 1;  //1 = Output txt file of event parameters
 
-const double radFrac = 0.5; //Fraction of events that are radiative 
+double radFrac = 0.5; //Fraction of events that are radiative 
 
 —
 
 Phase-space cuts on outgoing particles:
 
-const double tkCut = 0.001;
-const double tqrCut = 0.001;
-const double xeCut = 0.001;
+double tkCut = 0.001;
+double tqrCut = 0.001;
+double xeCut = 0.001;
 
 These should not be used to place cuts on lab-frame phase-space, as they are defined for various non-lab-frame coordinate systems.  The first two refer to the bremsstrahlung events: tkCut is the cut in the CM polar photon angle, tqrCut is the cut in the polar angle of the electrons in their center of mass frame.  For elastic events, xeCut is the cut in the elastic electron angle in the CM system. They are non-zero to avoid singularities.
 
 —
 
-const double dE_frac = 1.e-3;
+double dE_frac = 1.e-3;
 
 This sets the crossover between what is considered a hard and a soft photon.  It is expressed in units of s, ie, Ecm^2.
 
 —
-const double Lumi = 6.e35;
+double Lumi = 6.e35;
 
 This is the luminosity in cm^2s^-1 in order to convert the output from cross-section to rates. 
 
 —
 
-const double Tbeam = 100.; 
+double Tbeam = 100.; 
 
 This is the incident beam kinetic energy, in MeV.
 
