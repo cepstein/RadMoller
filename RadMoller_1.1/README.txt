@@ -1,6 +1,6 @@
 Radiative Moller Generator
 Charles Epstein, MIT
-Version 1.0, February 2014
+Version 1.1, February 2014
 
 
 ===	Overview	===
@@ -17,7 +17,7 @@ Bremsstrahlung events-
 
 Events consisting of ee -> eey.  The squared matrix element was	calculated using the Mathematica plugins FeynArts and FormCalc.  The convenient phase-space parametrization of Petriello, 2003 was used to translate this to a cross-section.
 
-The generator outputs approximately equal quantities of each event type.  In future releases this may become a user-selectable parameter.  All generated events must be examined in order to determine electron rates, i.e., one cannot simply look at the bremsstrahlung events because these do not account for photons of energy less than dE.
+The user may specify what fraction of generated events are radiative events in order to improve statistics for one type of process.  However, all generated events must be examined in order to determine electron rates, i.e., one cannot simply look at the bremsstrahlung events because these do not account for photons of energy less than dE.
 
 ===	Compiling and Running	===
 
@@ -39,6 +39,8 @@ User-specified parameters are set in "vars.h".  They are:
 const int soft_flag = 1; //0 = Denner & Pozzorini, 1 = Tsai
 const int root_flag = 1; //1 = Output TNtuple of event parameters
 const int txt_flag = 1;  //1 = Output txt file of event parameters
+
+const double radFrac = 0.5; //Fraction of events that are radiative 
 
 —
 
@@ -80,7 +82,7 @@ The generator has up to three outputs.
 
 ===	Weighting Scheme	===
 
-The weights follow the convention of (cross-section)*(luminosity)/nEve: ie, they are normalized to the number of events in the set.  With this scheme, the integrated output rates correspond to physical quantities.
+The weights follow the convention of (cross-section)*(luminosity): ie, they are not normalized to the number of events in the set.  With this scheme, the integrated output rates must be divided by the number of events in the set in order to obtain physical rates.  This is the same scheme as the DL MadGraph event sets but multiplied by the luminosity (which could be set by the user to be unity).
  
 
 ===	Development		===

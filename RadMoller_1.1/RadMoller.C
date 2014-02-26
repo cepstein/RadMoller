@@ -2,7 +2,7 @@
 //================================================================================
 //
 //      Radiative Moller Generator
-//      Charles Epstein, MIT, Fall 2013
+//      Charles Epstein, MIT, Spring 2014
 //      Soft Radiative Corrections based on Denner & Pozzorini, 1999 
 //            or Tsai, 1960 (User Choice)
 //      Hard Brehmsstralung calculated using FeynArts & FormCalc
@@ -60,7 +60,7 @@ double dSigmahdEkdTkdTqr(double Ek , double tk, double tqr, double pqr,
     {
     TLorentzVector *p1 = new TLorentzVector(0,0,Pbeam,Ebeam);
     TLorentzVector *p2 = new TLorentzVector(0,0,0,me);
-    double bremCS = twopi*pow(1.97e-11,2.)*Lumi*sin(tk)*sin(tqr)*Ek*Mh2(p1,p2,q1,q2,k)/(64.*se*pow(2.*pi,4.));
+    double bremCS = pow(1.97e-11,2.)*Lumi*sin(tk)*sin(tqr)*Ek*Mh2(p1,p2,q1,q2,k)/(64.*se*pow(2.*pi,4.));
     return bremCS;
     }
 
@@ -78,8 +78,16 @@ int main(int argc, char* argv[])
     TFile *f = new TFile("histos.root","recreate");
     TFile *fout = new TFile("radEve.root","recreate");
     FILE *eFile;
+    FILE *oFile;
     eFile = fopen("radEve.txt","w");
-
+    oFile = fopen("summary.txt","w");
+    
+    fprintf(oFile,"Generator Summary:\n");
+    fprintf(oFile,"Number of Events: %.0f\n",nEve);
+    fprintf(oFile,"Soft Correction Flag: %.0f\n",soft_flag);
+    fprintf(oFile,"Beam Energy: %.1f\tDelta E: %.3f\tLuminosity: %.2f\tRadiative Fraction: %.3f\n",Tbeam,dE,Lumi,radFrac);
+    fprintf(oFile,"Photon Theta Cut: %.3f\t Rad Electron Theta Cut: %.3f\tElastic Eletron Theta Cut: %.3f\n",tkCut,tqrCut,xeCut);
+    
     if(txt_flag){
         fprintf(eFile,"Weight\tP1x\tP1y\tP1z\tP2z\tP2y\tP2z\tKx\tKy\tKz\n");
     }
@@ -114,24 +122,30 @@ int main(int argc, char* argv[])
     
 
     hst_xy->SetXTitle("Scattered Electron Angle");
-    hst_xy->SetYTitle("Scattered Electron Energy");
+    hst_xy->SetYTitle("Scattered Electron Energy [MeV]");
 
-    ptpz->SetXTitle("Pz");
-    ptpz->SetYTitle("Pt");
-    ptpzg->SetXTitle("Pz");
-    ptpzg->SetYTitle("Pt");
+    ptpz->SetXTitle("Pz [MeV/c]");
+    ptpz->SetYTitle("Pt [MeV/c]");
+    ptpzg->SetXTitle("Pz [MeV/c]");
+    ptpzg->SetYTitle("Pt [MeV/c]");
 
     aa->SetXTitle("e1 Angle");
     aa->SetYTitle("e2 Angle");
 
-    pp->SetXTitle("e1 Momentum");
-    pp->SetYTitle("e2 Momentum");
+    pp->SetXTitle("e1 Momentum [MeV/c]");
+    pp->SetYTitle("e2 Momentum [MeV/c]");
 
     eg->SetYTitle("e1 Angle");
     eg->SetXTitle("Photon Angle");
 
     kk->SetXTitle("Photon Energy [MeV]");
 
+    ph_angles->SetXTitle("Angle");
+
+    ph_erg->SetXTitle("Angle");
+    ph_erg->SetYTitle("Energy [MeV]");
+
+    w_int->SetXTitle("Angle");
 
     TH1D *ekDist = new TH1D("ekDist","Ek Distribution",1000,dE,EkMax);
     for (int i = 0; i<ekDist->GetNbinsX(); i++)
@@ -172,13 +186,13 @@ int main(int argc, char* argv[])
         double pqr = twopi*randGen->Uniform();
         double weight;
 
-        double Ek   = ekDist->GetRandom();//dE+(EkMax-dE)*randGen->Uniform();//Ek=//Must be less than 5.016  //
-        double tk   = tkCut+(pi-2.*tkCut)*randGen->Uniform();//tkDist->GetRandom();//tkCut+(pi-tkCut)*PseRan->Uniform();
-        double tqr  = tqrDist->GetRandom();//tqrCut+(pi-2.*tqrCut)*randGen->Uniform();//tqrCut+(pi-tqrCut)*PseRan->Uniform();
+        double Ek   = ekDist->GetRandom();//dE+(EkMax-dE)*randGen->Uniform();
+        double tk   = tkCut+(pi-2.*tkCut)*randGen->Uniform();//tkDist->GetRandom();
+        double tqr  = tqrDist->GetRandom();//tqrCut+(pi-2.*tqrCut)*randGen->Uniform();
 
-        double ekWeight   = 1./ekDist->GetBinContent(ekDist->FindBin(Ek));//EkMax-dE;//// replaces range of Ek
-        double tkWeight   = pi-2.*tkCut;//1./tkDist->GetBinContent(tkDist->FindBin(tk));//replaces range of tk
-        double tqrWeight  = 1./tqrDist->GetBinContent(tqrDist->FindBin(tqr));//pi-2.*tqrCut;////replaces range of tk
+        double ekWeight   = 1./ekDist->GetBinContent(ekDist->FindBin(Ek));//EkMax-dE;
+        double tkWeight   = pi-2.*tkCut;//1./tkDist->GetBinContent(tkDist->FindBin(tk));
+        double tqrWeight  = 1./tqrDist->GetBinContent(tqrDist->FindBin(tqr));//pi-2.*tqrCut;
 
         double pqrWeight = twopi;
 
@@ -193,7 +207,7 @@ int main(int argc, char* argv[])
         TLorentzVector *cm = new TLorentzVector(0.,0.,Pbeam,Ebeam+me);
 
         
-        if (pickProc<0.5)
+        if (pickProc<radFrac)
             {
             TLorentzVector *qcm = new TLorentzVector(-Ek*sin(tk)*cos(phik),-Ek*sin(tk)*sin(phik),-Ek*cos(tk),Ecm-Ek);
             TLorentzVector *qr = new TLorentzVector(*qcm);
@@ -218,7 +232,7 @@ int main(int argc, char* argv[])
             q2->Boost(cm->BoostVector());
             TLorentzVector *k = new TLorentzVector(*cm-*q1-*q2);
 
-            weight = 2.*dSigmahdEkdTkdTqr(Ek,tk,tqr,pqr,q1,q2,k)/nEve\
+            weight = dSigmahdEkdTkdTqr(Ek,tk,tqr,pqr,q1,q2,k)/radFrac\
             *ekWeight*tkWeight*tqrWeight*pqrWeight;
                 
             if (weight<0){cout<<"Error! Negative Weight: "<<weight<<endl;}
@@ -248,12 +262,11 @@ int main(int argc, char* argv[])
             ph_angles->Fill(k->Theta()*180./pi,weight);
             ph_erg->Fill(k->Theta()*180./pi,k->E(),weight);
                        
-
             }
             
-        if (pickProc >0.5){
+        if (pickProc >radFrac){
 
-            weight = 2.*mCSfunc(xe,dE)*(pi-2.*xeCut)/nEve;
+            weight = mCSfunc(xe,dE)*(pi-2.*xeCut)/(1.-radFrac);
                 
             TLorentzVector *q1cm = new TLorentzVector(Pcmp*sin(xe)*cos(phik),\
                 Pcmp*sin(xe)*sin(phik),Pcmp*cos(xe),Ecmp);
@@ -291,21 +304,24 @@ int main(int argc, char* argv[])
 
 }
     cout<<endl;
-    cout<<"Average (CrossSection)*(Luminosity) of Generated Events "<<w_int->GetBinContent(2)/nEve\
-    <<" +/- "<<w_int->GetBinError(2)/nEve<<endl;
+    fprintf(oFile,"Average (CrossSection)*(Luminosity) of Generated Events %.2f +/- %.2f \n",w_int->GetBinContent(2)/nEve\
+    ,w_int->GetBinError(2)/nEve);
+    printf("Average (CrossSection)*(Luminosity) of Generated Events %.2f +/- %.2f \n",w_int->GetBinContent(2)/nEve\
+    ,w_int->GetBinError(2)/nEve);
+
     
     TH1D *ph_proj;
     for (int i = 0;i<w_int->GetNbinsX();i++){
-        cout<<w_int->GetBinCenter(i)<<" degree electron rate (Hz):\t"<<\
-        w_int->GetBinContent(i)/nEve<<"\t+/-\t"<<w_int->GetBinError(i)/nEve<<endl;
+        fprintf(oFile,"%.0f degree electron rate (Hz):\t %.2f\t+/-\t%.2f\n",\
+            w_int->GetBinCenter(i),w_int->GetBinContent(i)/nEve,w_int->GetBinError(i)/nEve);
     }
 
     for (int i = 0;i<ph_erg->GetNbinsX();i++){
         ph_proj = ph_erg->ProjectionY("ph_proj",i,i);
-        cout<<ph_angles->GetBinCenter(i)<<" degree mean photon energy (MeV):\t"<<\
-        ph_proj->GetMean()<<"\tStdDev: "<<ph_proj->GetRMS()<<endl;
-        cout<<ph_angles->GetBinCenter(i)<<" degree photon rate (Hz):\t"<<\
-        ph_angles->GetBinContent(i)/nEve<<"\t+/-\t"<<ph_angles->GetBinError(i)/nEve<<endl;
+        fprintf(oFile,"%.0f degree mean photon energy (MeV):\t%.2f\tStdDev: %.2f\n",
+            ph_angles->GetBinCenter(i),ph_proj->GetMean(),ph_proj->GetRMS());
+        fprintf(oFile,"%.0f degree photon rate (Hz):\t %.2f\t+/-\t%.2f\n",ph_angles->GetBinCenter(i),\
+        ph_angles->GetBinContent(i)/nEve,ph_angles->GetBinError(i)/nEve);
     }
     f->cd();
     hst_xy->Write();
@@ -331,6 +347,7 @@ int main(int argc, char* argv[])
     if(txt_flag){
         fclose(eFile);
     }
+    fclose(oFile);
     cout<<"Finished Generating Events!  View Histograms by executing 'root -l ../plotHistos.C'"<<endl;
 
     return EXIT_SUCCESS;
