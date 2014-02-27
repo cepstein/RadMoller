@@ -121,7 +121,7 @@ rMollerGen->GetWeight();
 rMollerGen->Getq1();
 rMollerGen->Getq2();
 rMollerGen->Getk();
----> These are the output momenta.
+---> These are the output momenta in TLorentzVector format
 
 
 
