@@ -3,10 +3,10 @@
 double RadMoller_Gen::GetHistRandom(TH1D *hist){
     //Adapted from ROOT GetRandom to use class-implemented random number generator.
     //Return a random number distributed according the histogram bin contents.
-
+    delete[] fIntegral;
     int nbinsx = hist->GetNbinsX();
     double integral = 0;
-    double* fIntegral = new double[nbinsx+2];
+    fIntegral = new double [nbinsx+2];
     fIntegral = hist->GetIntegral();
     double fEntries = hist->GetEntries();
 
@@ -169,7 +169,18 @@ void RadMoller_Gen::Generate_Event(){
 
     if (pickProc<radFrac){//Bremsstrahlung
 
-        qcm = new TLorentzVector(-Ek*sin(tk)*cos(phik),-Ek*sin(tk)*sin(phik),-Ek*cos(tk),Ecm-Ek);
+        delete qcm;
+        delete qr;
+        delete q1r;
+        delete q2r;
+        delete q1cm;
+        delete q2cm;
+        delete q1;
+        delete q2;
+        delete k;
+
+
+        qcm =  new TLorentzVector(-Ek*sin(tk)*cos(phik),-Ek*sin(tk)*sin(phik),-Ek*cos(tk),Ecm-Ek);
         qr = new TLorentzVector(*qcm);
         qr->Boost(-qcm->BoostVector());
 
@@ -198,6 +209,11 @@ void RadMoller_Gen::Generate_Event(){
     }
 
     if (pickProc >radFrac){//Elastic Kinematics
+        delete q1cm;
+        delete q2cm;
+        delete q1;
+        delete q2;
+
         weight = mCSfunc(xe,dE)*(pi-2.*xeCut)/(1.-radFrac);
             
         q1cm = new TLorentzVector(Pcmp*sin(xe)*cos(phik),\

@@ -29,7 +29,6 @@ class RadMoller_Gen {
 
         double radFrac;
 
-        //Phase-space cuts on outgoing particles
         double tkCut;
         double tqrCut;
         double xeCut;
@@ -38,7 +37,6 @@ class RadMoller_Gen {
 
         double Lumi;
         double Tbeam; 
-
         double M2(double);
         double tree_cs(double);
         double mCSfunc(double,double);
@@ -57,7 +55,7 @@ class RadMoller_Gen {
         double Ek;
         double tk;
         double tqr;
-
+        double* fIntegral;
         double ekWeight;
         double tkWeight;
         double tqrWeight;

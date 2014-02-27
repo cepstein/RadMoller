@@ -68,7 +68,6 @@ int main(int argc, char* argv[])
     double Tbeam = 100.; 
     
     double pi = 4.0*atan(1.0);
-
     //=========================================================
     //  Initialize Generator
     RadMoller_Gen* rMollerGen = new RadMoller_Gen;
@@ -83,7 +82,6 @@ int main(int argc, char* argv[])
 
     //
     //======================================================================
-
     //=========================================================
     //=========================================================
     TFile *f = new TFile("histos.root","recreate");
@@ -97,7 +95,6 @@ int main(int argc, char* argv[])
     fprintf(oFile,"Number of Events: %.0f\n",nEve);
     fprintf(oFile,"Beam Energy: %.1f\tDelta E Fraction: %.3f\tLuminosity: %.2f\tRadiative Fraction: %.3f\n",Tbeam,dE_frac,Lumi,radFrac);
     fprintf(oFile,"Photon Theta Cut: %.3f\t Rad Electron Theta Cut: %.3f\tElastic Eletron Theta Cut: %.3f\n",tkCut,tqrCut,xeCut);
-    
     if(txt_flag){
         fprintf(eFile,"Weight\tP1x\tP1y\tP1z\tP2z\tP2y\tP2z\tKx\tKy\tKz\n");
     }
@@ -129,7 +126,6 @@ int main(int argc, char* argv[])
     ph_angles->Sumw2();
     ph_erg->Sumw2();
     
-
     hst_xy->SetXTitle("Scattered Electron Angle");
     hst_xy->SetYTitle("Scattered Electron Energy [MeV]");
 
@@ -156,13 +152,13 @@ int main(int argc, char* argv[])
 
     w_int->SetXTitle("Angle");
     //=====================================================
-    cout<<"Generating Events: ";
+    printf("Generating Events: \n");
     int nshow = nEve/10;
     for(long loop=0; loop<nEve; loop++)
         {
         if (loop == nshow){
-            nshow += nEve/10;
-            cout<<"[][][][]";
+            nshow += nEve/1000;
+            printf("[]");
         }
         rMollerGen->Generate_Event();
         int elFlag = rMollerGen->GetElFlag();
