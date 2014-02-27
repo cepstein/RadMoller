@@ -21,7 +21,7 @@ The user may specify what fraction of generated events are radiative events in o
 
 ===	Compiling and Running	===
 
-You will need installations of ROOT and CMAKE.  In the directory RadMoller_1.0, run the commands:
+You will need installations of ROOT and CMAKE.  In the directory RadMoller_###, run the commands:
 
 mkdir build
 cd build
