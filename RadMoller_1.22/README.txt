@@ -55,7 +55,7 @@ These should not be used to place cuts on lab-frame phase-space, as they are def
 
 double dE_frac = 1.e-3;
 
-This sets the crossover between what is considered a hard and a soft photon.  It is expressed in units of s, ie, Ecm^2.
+This sets the crossover between what is considered a hard and a soft photon.  It is expressed in units of sqrt(s), ie, the center of mass energy.
 
 —
 double Lumi = 6.e35;

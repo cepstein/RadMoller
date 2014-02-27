@@ -39,6 +39,7 @@ double RadMoller_Gen::randomGen(){
     return randGen->Uniform();
 }
 
+double version = 1.22;
 
 int main(int argc, char* argv[])
     {
@@ -59,10 +60,10 @@ int main(int argc, char* argv[])
     double tqrCut = 0.001;
     double xeCut = 0.001;
 
-    double dE_frac = 1.e-3;//CMS photon energy cutoff as fraction of S
+    double dE_frac = 1.e-4;//CMS photon energy cutoff as fraction of S
 
     //const double Lumi = 1.e30; //cm^2 s^-1 - gives CS in microbarns
-    double Lumi = 1.e30;
+    double Lumi = 6.e35;
 
     //Beam Kinetic Energy
     double Tbeam = 100.; 
@@ -90,7 +91,7 @@ int main(int argc, char* argv[])
     FILE *oFile;
     eFile = fopen("radEve.txt","w");
     oFile = fopen("summary.txt","w");
-    
+    fprintf(oFile,"Radiative Moller Generater Version %.2f\n",version);
     fprintf(oFile,"Generator Summary:\n");
     fprintf(oFile,"Number of Events: %.0f\n",nEve);
     fprintf(oFile,"Beam Energy: %.1f\tDelta E Fraction: %.3f\tLuminosity: %.2f\tRadiative Fraction: %.3f\n",Tbeam,dE_frac,Lumi,radFrac);
@@ -113,7 +114,8 @@ int main(int argc, char* argv[])
         
     TNtuple *radEve_t = new TNtuple("radEve_t", "Radiative Events", "p1x:p1y:p1z:p2x:p2y:p2z:k1x:k1y:k1z:weight");
     TNtuple *softEve_t = new TNtuple("softEve_t", "Soft Corrected Events", "p1x:p1y:p1z:p2x:p2y:p2z:weight");
-        
+    
+
     hst_xy->Sumw2();
     ptpz->Sumw2();
     ptpzg->Sumw2();
@@ -157,8 +159,8 @@ int main(int argc, char* argv[])
     for(long loop=0; loop<nEve; loop++)
         {
         if (loop == nshow){
-            nshow += nEve/1000;
-            printf("[]");
+            nshow += nEve/10;
+            cout<<"[][][]"<<flush;
         }
         rMollerGen->Generate_Event();
         int elFlag = rMollerGen->GetElFlag();
@@ -179,22 +181,23 @@ int main(int argc, char* argv[])
                     weight,q1->Px(),q1->Py(),q1->Pz(),q2->Px(),q2->Py(),q2->Pz(),k->Px(),k->Py(),k->Pz());
             }
 
-            hst_xy->Fill(q1->Theta()*180./pi,q1->E(),weight);
-            //hst_xy->Fill(q2->Theta()*180./pi,q2->E(),weight);
-            aa->Fill(q1->Theta()*180./pi,q2->Theta()*180./pi,weight);
-            pp->Fill(q1->P(),q2->P(),weight);
-            ptpz->Fill(q1->Pz(),q1->Pt(),weight);
-            //ptpz->Fill(q2->Pz(),q2->Pt(),weight);
-            ptpzg->Fill(k->Pz(),k->Pt(),weight);
-            //cout<<"q1 E "<<q1->E()<<endl;
-            eg->Fill(k->Theta()*180./pi,q1->Theta()*180./pi,weight);
-            CSint->Fill(q1->Theta(),weight);
-            w_int->Fill(q1->Theta()*180./pi,weight);
+            hst_xy->Fill(q1->Theta()*180./pi,q1->E(),weight/nEve);
+            hst_xy->Fill(q2->Theta()*180./pi,q2->E(),weight/nEve);
+            aa->Fill(q1->Theta()*180./pi,q2->Theta()*180./pi,weight/nEve);
+            pp->Fill(q1->P(),q2->P(),weight/nEve);
+            ptpz->Fill(q1->Pz(),q1->Pt(),weight/nEve);
+            ptpz->Fill(q2->Pz(),q2->Pt(),weight/nEve);
+            ptpzg->Fill(k->Pz(),k->Pt(),weight/nEve);
+            eg->Fill(k->Theta()*180./pi,q1->Theta()*180./pi,weight/nEve);
+            CSint->Fill(q1->Theta(),weight/nEve);
+            w_int->Fill(q1->Theta()*180./pi,weight/nEve);
+            w_int->Fill(q2->Theta()*180./pi,weight/nEve);
             //if (k->E()>1.0){
-            kk->Fill(k->E(),weight);
-            ph_angles->Fill(k->Theta()*180./pi,weight);
-            ph_erg->Fill(k->Theta()*180./pi,k->E(),weight);
-                       
+            kk->Fill(k->E(),weight/nEve);
+            ph_angles->Fill(k->Theta()*180./pi,weight/nEve);
+            ph_erg->Fill(k->Theta()*180./pi,k->E(),weight/nEve);
+            
+
             
             }
 
@@ -212,30 +215,32 @@ int main(int argc, char* argv[])
             }
 
             //Plot in Histograms
-            hst_xy->Fill(q1->Theta()*180./pi,q1->E(),weight);
-            ptpz->Fill(q1->Pz(),q1->Pt(),weight);
-            //hst_xy->Fill(q2->Theta()*180./pi,q2->E(),weight);
-            //ptpz->Fill(q2->Pz(),q2->Pt(),weight);
-            aa->Fill(q1->Theta()*180./pi,q2->Theta()*180./pi,weight);
-            pp->Fill(q1->P(),q2->P(),weight);
-            CSint->Fill(q1->Theta(),weight);
-            w_int->Fill(q1->Theta()*180./pi,weight);
+            hst_xy->Fill(q1->Theta()*180./pi,q1->E(),weight/nEve);
+            ptpz->Fill(q1->Pz(),q1->Pt(),weight/nEve);
+            hst_xy->Fill(q2->Theta()*180./pi,q2->E(),weight/nEve);
+            ptpz->Fill(q2->Pz(),q2->Pt(),weight/nEve);
+            aa->Fill(q1->Theta()*180./pi,q2->Theta()*180./pi,weight/nEve);
+            pp->Fill(q1->P(),q2->P(),weight/nEve);
+            CSint->Fill(q1->Theta(),weight/nEve);
+            w_int->Fill(q1->Theta()*180./pi,weight/nEve);
+            w_int->Fill(q2->Theta()*180./pi,weight/nEve);
+
+
             }
             
         }
 
 
     cout<<endl;
-    fprintf(oFile,"Average (CrossSection)*(Luminosity) of Generated Events %.2f +/- %.2f \n",w_int->GetBinContent(2)/nEve\
-    ,w_int->GetBinError(2)/nEve);
-    printf("Average (CrossSection)*(Luminosity) of Generated Events %.2f +/- %.2f \n",w_int->GetBinContent(2)/nEve\
-    ,w_int->GetBinError(2)/nEve);
+    fprintf(oFile,"Average (CrossSection)*(Luminosity) of Generated Events %.2f +/- %.2f \n",w_int->GetBinContent(2)\
+    ,w_int->GetBinError(2));
+    printf("Average (CrossSection)*(Luminosity) of Generated Events %.2f +/- %.2f \n",w_int->GetBinContent(2)\
+    ,w_int->GetBinError(2));
 
-    
     TH1D *ph_proj;
     for (int i = 0;i<w_int->GetNbinsX();i++){
         fprintf(oFile,"%.0f degree electron rate (Hz):\t %.2f\t+/-\t%.2f\n",\
-            w_int->GetBinCenter(i),w_int->GetBinContent(i)/nEve,w_int->GetBinError(i)/nEve);
+            w_int->GetBinCenter(i),w_int->GetBinContent(i),w_int->GetBinError(i));
     }
 
     for (int i = 0;i<ph_erg->GetNbinsX();i++){
@@ -243,7 +248,7 @@ int main(int argc, char* argv[])
         fprintf(oFile,"%.0f degree mean photon energy (MeV):\t%.2f\tStdDev: %.2f\n",
             ph_angles->GetBinCenter(i),ph_proj->GetMean(),ph_proj->GetRMS());
         fprintf(oFile,"%.0f degree photon rate (Hz):\t %.2f\t+/-\t%.2f\n",ph_angles->GetBinCenter(i),\
-        ph_angles->GetBinContent(i)/nEve,ph_angles->GetBinError(i)/nEve);
+        ph_angles->GetBinContent(i),ph_angles->GetBinError(i));
     }
     f->cd();
     hst_xy->Write();
