@@ -85,7 +85,7 @@ The weights follow the convention of (cross-section)*(luminosity): ie, they are 
  
 === Implementing the Generator in Outside Applications ===
 
-First, import "RadMoller.h", "RadMoller_f.h", and "MSqBrem.h".  First, provide an implementation of the random number generator.  For example: 
+First, import "RadMoller.h", "RadMoller_f.h", and "MSqBrem.h".  Provide an implementation of the random number generator.  For example: 
 
 TRandom3 *randGen = new TRandom3(0);
 double RadMoller_Gen::randomGen(){
