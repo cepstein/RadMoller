@@ -1,6 +1,6 @@
 Radiative Moller Generator
 Charles Epstein, MIT
-Version 1.21, February 2014
+Version 1.22, February 2014
 
 
 ===	Overview	===
