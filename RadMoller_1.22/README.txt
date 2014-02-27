@@ -83,6 +83,47 @@ The generator has up to three outputs.
 
 The weights follow the convention of (cross-section)*(luminosity): ie, they are not normalized to the number of events in the set.  With this scheme, the integrated output rates must be divided by the number of events in the set in order to obtain physical rates.  This is the same scheme as the DL MadGraph event sets but multiplied by the luminosity (which could be set by the user to be unity).
  
+=== Implementing the Generator in Outside Applications ===
+
+First, import "RadMoller.h", "RadMoller_f.h", and "MSqBrem.h".  First, provide an implementation of the random number generator.  For example: 
+
+TRandom3 *randGen = new TRandom3(0);
+double RadMoller_Gen::randomGen(){
+    return randGen->Uniform();
+}
+
+
+Instantiate an instance of the generator by:
+
+RadMoller_Gen* rMollerGen = new RadMoller_Gen;
+
+And set the flags and parameters (defined above) by:
+rMollerGen->SetOutputFlags(root_flag,txt_flag);
+rMollerGen->SetRadFrac(radFrac);
+rMollerGen->SetTCuts(tkCut,tqrCut,xeCut);
+rMollerGen->SetECut(dE_frac);
+rMollerGen->SetLumi(Lumi);
+rMollerGen->SetTBeam(Tbeam);
+
+Then initialize the generator:
+rMollerGen->InitGenerator_RadMoller();
+
+Generate an event by calling: 
+rMollerGen->Generate_Event();
+
+And access the output by:
+
+
+rMollerGen->GetElFlag(); 
+---> this is a flag of whether the event was elastic (2 e-) or radiative (2e-, 1y). (1 = radiative)
+rMollerGen->GetWeight(); 
+---> access the weight of the event
+rMollerGen->Getq1();
+rMollerGen->Getq2();
+rMollerGen->Getk();
+---> These are the output momenta.
+
+
 
 ===	Development		===
 
