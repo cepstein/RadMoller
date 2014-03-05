@@ -39,7 +39,7 @@ double RadMoller_Gen::randomGen(){
     return randGen->Uniform();
 }
 
-double version = 2.0;
+double version = 2.1;
 
 int main(int argc, char* argv[])
     {
@@ -72,8 +72,7 @@ int main(int argc, char* argv[])
     //=========================================================
     //  Initialize Generator
     RadMoller_Gen* rMollerGen = new RadMoller_Gen;
-    rMollerGen->SetBhabha();
-    rMollerGen->SetOutputFlags(root_flag,txt_flag);
+    rMollerGen->SetMoller();
     rMollerGen->SetRadFrac(radFrac);
     rMollerGen->SetTCuts(tkCut,tqrCut,xeCut);
     rMollerGen->SetECut(dE_frac);

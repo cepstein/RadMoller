@@ -1,6 +1,6 @@
 Radiative Moller/Bhabha Generator
 Charles Epstein, MIT
-Version 2.0, February 2014
+Version 2.1, February 2014
 
 
 ===	Overview	===
@@ -106,7 +106,6 @@ rMollerGen->SetBhabha();
 
 
 Set the flags and parameters (defined above) by:
-rMollerGen->SetOutputFlags(root_flag,txt_flag);
 rMollerGen->SetRadFrac(radFrac);
 rMollerGen->SetTCuts(tkCut,tqrCut,xeCut);
 rMollerGen->SetECut(dE_frac);

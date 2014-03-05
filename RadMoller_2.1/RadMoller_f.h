@@ -27,11 +27,6 @@ void RadMoller_Gen::SetBhabha(){
     mb_flag = 0;
 }
 
-void RadMoller_Gen::SetOutputFlags(int rf, int tf){
-    root_flag = rf;
-    txt_flag = tf;
-}
-
 void RadMoller_Gen::SetRadFrac(double rdf){
     radFrac = rdf;
 }
@@ -215,7 +210,7 @@ void RadMoller_Gen::InitGenerator_RadMoller(){
 
     for (int i = 0; i<tkDist->GetNbinsX(); i++)
         {
-        tkDist->SetBinContent(i,(sqrt(pow(pi/2.,2.)-pow((i/1000.)*pi-pi/2.,2.))));
+        tkDist->SetBinContent(i,1./(sqrt(pow(pi/2.,2.)-pow((i/1000.)*pi-pi/2.,2.))));
         }
     tkDist->Scale(1./tkDist->Integral("width"));
 

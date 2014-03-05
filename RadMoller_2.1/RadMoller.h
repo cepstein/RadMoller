@@ -5,7 +5,6 @@
 class RadMoller_Gen {
     public:
         void InitGenerator_RadMoller();
-        void SetOutputFlags(int,int);
         void SetRadFrac(double);
         void SetTCuts(double,double,double);
         void SetECut(double);
@@ -23,13 +22,11 @@ class RadMoller_Gen {
 
     private:
         double randomGen();
-        //Output Flags
-        int root_flag; 
-        int txt_flag; 
 
         int mb_flag;
 
         int elFlag;
+
 
         double radFrac;
 
