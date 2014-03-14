@@ -5,10 +5,8 @@ double RadMoller_Gen::GetHistRandom(TH1D *hist){
     //Return a random number distributed according the histogram bin contents.
     delete[] fIntegral;
     int nbinsx = hist->GetNbinsX();
-    double integral = 0;
     fIntegral = new double [nbinsx+2];
     fIntegral = hist->GetIntegral();
-    double fEntries = hist->GetEntries();
 
     double r1 = randomGen();
     int ibin = TMath::BinarySearch(nbinsx,fIntegral,r1);
@@ -67,7 +65,7 @@ double RadMoller_Gen::sqr(double x)
     }
 
 //Squared Tree-Level Matrix element - does not take m->0 limit
-double RadMoller_Gen::M2(Double_t x)
+double RadMoller_Gen::M2(double x)
     {
     return 64.0*pow(pi,2.)*pow(alpha,2.)*(pow(me,4.)/pow(te(x),2)*
         ((pow(se,2)+pow(ue(x),2))/(2.*pow(me,4))+4.*te(x)/pow(me,2)-4.0)+pow(me,4)/
@@ -76,7 +74,7 @@ double RadMoller_Gen::M2(Double_t x)
     }
 
 //Squared Tree-Level Bhabha Matrix element
-double RadMoller_Gen::M2b(Double_t x)
+double RadMoller_Gen::M2b(double x)
     {
     return 64.0*pow(pi,2.)*pow(alpha,2.)*(pow(me,4.)/pow(te(x),2)*
         ((pow(ue(x),2)+pow(se,2))/(2.*pow(me,4))+4.*te(x)/pow(me,2)-4.0)+pow(me,4)/
@@ -163,19 +161,19 @@ double RadMoller_Gen::bCSfunc(double x, double dE)
 
 
 //Construct the e-e- Bremsstrahlung Cross Section 
-double RadMoller_Gen::dSigmahdEkdTkdTqr(double Ek , double tk, double tqr, double pqr, 
-  TLorentzVector *q1, TLorentzVector *q2, TLorentzVector *k)
+double RadMoller_Gen::dSigmahdEkdTkdTqr(double Ek , double tk, double tqr, 
+  TLorentzVector *q1, TLorentzVector *k)
     {
-    double bremCS = pow(1.97e-11,2.)*Lumi*sin(tk)*sin(tqr)*Ek*Mh2(p1,p2,q1,q2,k)/(64.*se*pow(2.*pi,4.));
+    double bremCS = pow(1.97e-11,2.)*Lumi*sin(tk)*sin(tqr)*Ek*Mh2(p1,p2,q1,k)/(64.*se*pow(2.*pi,4.));
     return bremCS;
     }
 
 //Construct the e-e+ Bremsstrahlung Cross Section 
-double RadMoller_Gen::dSigmahdEkdTkdTqr_b(double Ek , double tk, double tqr, double pqr, 
-  TLorentzVector *q1, TLorentzVector *q2, TLorentzVector *k)
+double RadMoller_Gen::dSigmahdEkdTkdTqr_b(double Ek , double tk, double tqr, 
+  TLorentzVector *q1, TLorentzVector *k)
     {
     //Extra factor of two because e+,e- are distinguishable 
-    double bremCSb = 2.0*pow(1.97e-11,2.)*Lumi*sin(tk)*sin(tqr)*Ek*Mh2b(p1,p2,q1,q2,k)/(64.*se*pow(2.*pi,4.));
+    double bremCSb = 2.0*pow(1.97e-11,2.)*Lumi*sin(tk)*sin(tqr)*Ek*Mh2b(p1,p2,q1,k)/(64.*se*pow(2.*pi,4.));
     return bremCSb;
     }
 
@@ -280,11 +278,11 @@ void RadMoller_Gen::Generate_Event(){
         k = new TLorentzVector(*cm-*q1-*q2);
 
         if(mb_flag==1){//Moller
-            weight = dSigmahdEkdTkdTqr(Ek,tk,tqr,pqr,q1,q2,k)/radFrac\
+            weight = dSigmahdEkdTkdTqr(Ek,tk,tqr,q1,k)/radFrac\
             *ekWeight*tkWeight*tqrWeight*pqrWeight;
         }
         if(mb_flag==0){//Bhabha
-            weight = dSigmahdEkdTkdTqr_b(Ek,tk,tqr,pqr,q1,q2,k)/radFrac\
+            weight = dSigmahdEkdTkdTqr_b(Ek,tk,tqr,q1,k)/radFrac\
             *ekWeight*tkWeight*tqrWeight*pqrWeight;
         }
 
@@ -298,7 +296,7 @@ void RadMoller_Gen::Generate_Event(){
         delete q2;
 
         if(mb_flag==1){//Moller
-        weight = mCSfunc(xe,dE)*(pi-2.*xeCut)/(1.-radFrac);
+        weight = 0.5*mCSfunc(xe,dE)*(pi-2.*xeCut)/(1.-radFrac);
         }
 
         if(mb_flag==0){//Bhabha

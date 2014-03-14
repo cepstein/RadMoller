@@ -16,17 +16,17 @@ FIND_PACKAGE(ROOT REQUIRED)
 include_directories(${PROJECT_SOURCE_DIR}/include
 			${PROJECT_SOURCE_DIR}
 		    ${ROOT_INCLUDE_DIR})
-file(GLOB sourcesSIM ${PROJECT_SOURCE_DIR}/src/*.C)
+file(GLOB sourcesSIM ${PROJECT_SOURCE_DIR}/src/*.cc)
 file(GLOB headersSIM ${PROJECT_SOURCE_DIR}/include/*.h  )
 
-file(GLOB sourcesCOM ${PROJECT_SOURCE_DIR}/src/COM/*.C)
+file(GLOB sourcesCOM ${PROJECT_SOURCE_DIR}/src/COM/*.cc)
 file(GLOB headersCOM ${PROJECT_SOURCE_DIR}/include/COM/*.h  )
 
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(RadMoller RadMoller.C ${sourcesSIM} ${headersSIM} )
+add_executable(RadMoller RadMoller.cc ${sourcesSIM} ${headersSIM} )
 
 target_link_libraries(RadMoller "-L${ROOT_LIBRARY_DIR}" Core Cint Tree RIO Net FTGL MathCore Thread Hist Matrix Physics Gpad Minuit )
 

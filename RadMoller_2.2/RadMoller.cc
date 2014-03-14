@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
     double tqrCut = 0.001;
     double xeCut = 0.001;
 
-    double dE_frac = 1.e-4;//CMS photon energy cutoff as fraction of S
+    double dE_frac = 1.e-2;//CMS photon energy cutoff as fraction of sqrt(s)
 
     //const double Lumi = 1.e30; //cm^2 s^-1 - gives CS in microbarns
     double Lumi = 6.e35;
@@ -100,9 +100,9 @@ int main(int argc, char* argv[])
         fprintf(eFile,"Weight\tP1x\tP1y\tP1z\tP2z\tP2y\tP2z\tKx\tKy\tKz\n");
     }
 
-    TH2D  *hst_xy = new TH2D("hst_xy" ,  "Scattered Lepton Energy vs. Angle", 90,0,90,501,0.5,Tbeam);
-    TH2D *ptpz = new TH2D("ptpz", "Lepton Pt vs Pz",104,0,Tbeam,50,0,Tbeam/10);
-    TH2D *ptpzg = new TH2D("ptpzg", "Photon Pt vs Pz",104,0,Tbeam,50,0,Tbeam/10);
+    TH2D *hst_xy = new TH2D("hst_xy" ,  "Scattered Lepton Energy vs. Angle", 180,0,90,501,0.5,Tbeam);
+    TH2D *ptpz = new TH2D("ptpz", "Lepton Pt vs Pz",200,0,Tbeam+2,100,0,Tbeam/10);
+    TH2D *ptpzg = new TH2D("ptpzg", "Photon Pt vs Pz",200,0,Tbeam+2,100,0,Tbeam/10);
     TH2D *aa = new TH2D("aa","l1 Angle vs l2 Angle",180,0,90,180,0,90);
     TH2D *pp = new TH2D("pp","l1 Momentum vs l2 Momentum",199,0.5,Tbeam,199,0.5,Tbeam);
     TH2D *eg = new TH2D("eg","l1 Angle vs Photon Angle",360,0,180,180,0,90);

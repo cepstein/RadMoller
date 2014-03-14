@@ -5,12 +5,13 @@
 class RadMoller_Gen {
     public:
         void InitGenerator_RadMoller();
-        void SetOutputFlags(int,int);
         void SetRadFrac(double);
         void SetTCuts(double,double,double);
         void SetECut(double);
         void SetLumi(double);
         void SetTBeam(double);
+        void SetMoller();
+        void SetBhabha();
         void Generate_Event();
         int GetElFlag(){return elFlag;}
         double GetWeight(){return weight;}
@@ -21,11 +22,11 @@ class RadMoller_Gen {
 
     private:
         double randomGen();
-        //Output Flags
-        int root_flag; 
-        int txt_flag; 
+
+        int mb_flag;
 
         int elFlag;
+
 
         double radFrac;
 
@@ -38,12 +39,20 @@ class RadMoller_Gen {
         double Lumi;
         double Tbeam; 
         double M2(double);
+        double M2b(double);
         double tree_cs(double);
+        double tree_cs_b(double);
         double mCSfunc(double,double);
-        double dSigmahdEkdTkdTqr(double,double,double,double,\
-            TLorentzVector*,TLorentzVector*,TLorentzVector*);
-        double corr_soft_tsai(double,double);
-        double Mh2(TLorentzVector*, TLorentzVector*, TLorentzVector*, TLorentzVector*, TLorentzVector*);
+        double bCSfunc(double,double);
+        double dSigmahdEkdTkdTqr(double,double,double,\
+            TLorentzVector*,TLorentzVector*);
+        double dSigmahdEkdTkdTqr_b(double,double,double,\
+            TLorentzVector*,TLorentzVector*);
+
+        double soft_cs_tsai(double,double);
+        double soft_bhabha(double,double);
+        double Mh2(TLorentzVector*, TLorentzVector*, TLorentzVector*, TLorentzVector*);
+        double Mh2b(TLorentzVector*, TLorentzVector*, TLorentzVector*, TLorentzVector*);
 
         TH1D *ekDist;
         TH1D *tkDist;
@@ -87,7 +96,6 @@ class RadMoller_Gen {
         double Pcm;//momentum of either beam in CM frame
         double Ecmp; //Ecm per particle
         double Pcmp;//momentum of either beam in CM frame
-        double r0;
         double ec; //electron charge
         double se; //Elastic Mandelstam S ("s" was unavailable)
         double dE;

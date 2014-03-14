@@ -1,5 +1,5 @@
 double RadMoller_Gen::Mh2(TLorentzVector *p1, TLorentzVector *p2,\
- TLorentzVector *q1, TLorentzVector *q2, TLorentzVector *k){
+ TLorentzVector *q1, TLorentzVector *k){
   kp1 = k->Dot(*p1);
   kp2 = k->Dot(*p2);
   kp3 = k->Dot(*q1);
