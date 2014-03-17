@@ -3,18 +3,23 @@
 double RadMoller_Gen::GetHistRandom(TH1D *hist){
     //Adapted from ROOT GetRandom to use class-implemented random number generator.
     //Return a random number distributed according the histogram bin contents.
-    delete[] fIntegral;
     int nbinsx = hist->GetNbinsX();
-    fIntegral = new double [nbinsx+2];
-    fIntegral = hist->GetIntegral();
-
+    double cdfArray [nbinsx+2];
+    for(int i=0;i<nbinsx;i++){
+        if (i==0){
+            cdfArray[0]=0;
+        }
+        if (i != 0){
+            cdfArray[i]=0;
+            cdfArray[i]=cdfArray[i-1]+hist->GetBinContent(i)*hist->GetBinWidth(i);
+        }
+    }
     double r1 = randomGen();
-    int ibin = TMath::BinarySearch(nbinsx,fIntegral,r1);
+    int ibin = TMath::BinarySearch(nbinsx,cdfArray,r1);
     double x = hist->GetBinLowEdge(ibin+1);
-    if (r1 > fIntegral[ibin]) x +=
-      hist->GetBinWidth(ibin+1)*(r1-fIntegral[ibin])/(fIntegral[ibin+1] - fIntegral[ibin]);
+    if (r1 > cdfArray[ibin]) x +=
+      hist->GetBinWidth(ibin+1)*(r1-cdfArray[ibin])/(cdfArray[ibin+1] - cdfArray[ibin]);
     return x;
-
 }
 
 void RadMoller_Gen::SetMoller(){

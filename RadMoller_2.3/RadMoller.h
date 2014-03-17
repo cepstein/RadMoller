@@ -64,7 +64,6 @@ class RadMoller_Gen {
         double Ek;
         double tk;
         double tqr;
-        double* fIntegral;
         double ekWeight;
         double tkWeight;
         double tqrWeight;
