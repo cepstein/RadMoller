@@ -19,7 +19,8 @@ class RadMoller_Gen {
         TLorentzVector* Getq1(){return q1;}
         TLorentzVector* Getq2(){return q2;}
         TLorentzVector* Getk(){return k;}
-
+        double mCSfunc(double,double);
+        double dEr(){return Ek;}
     private:
         double randomGen();
 
@@ -42,7 +43,6 @@ class RadMoller_Gen {
         double M2b(double);
         double tree_cs(double);
         double tree_cs_b(double);
-        double mCSfunc(double,double);
         double bCSfunc(double,double);
         double dSigmahdEkdTkdTqr(double,double,double,\
             TLorentzVector*,TLorentzVector*);
@@ -82,7 +82,7 @@ class RadMoller_Gen {
         double p1p2;
         double p1p3;
 
-
+        double dE;
         double me;
         double Ebeam;
         double alpha;
@@ -97,7 +97,6 @@ class RadMoller_Gen {
         double Pcmp;//momentum of either beam in CM frame
         double ec; //electron charge
         double se; //Elastic Mandelstam S ("s" was unavailable)
-        double dE;
         double EkMax;
 
 

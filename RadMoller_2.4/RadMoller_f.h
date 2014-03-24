@@ -4,10 +4,12 @@ double RadMoller_Gen::GetHistRandom(TH1D *hist){
     //Adapted from ROOT GetRandom to use class-implemented random number generator.
     //Return a random number distributed according the histogram bin contents.
     int nbinsx = hist->GetNbinsX();
-    double cdfArray [nbinsx+2];
+    double *cdfArray;
+    cdfArray = new double[nbinsx+2];
     for(int i=0;i<nbinsx;i++){
         if (i==0){
             cdfArray[0]=0;
+           // cdfArray[0]=hist->GetBinContent(i+1)*hist->GetBinWidth(i+1);
         }
         if (i != 0){
             cdfArray[i]=0;
@@ -19,6 +21,7 @@ double RadMoller_Gen::GetHistRandom(TH1D *hist){
     double x = hist->GetBinLowEdge(ibin+1);
     if (r1 > cdfArray[ibin]) x +=
       hist->GetBinWidth(ibin+1)*(r1-cdfArray[ibin])/(cdfArray[ibin+1] - cdfArray[ibin]);
+    delete[] cdfArray;
     return x;
 }
 
@@ -200,14 +203,13 @@ void RadMoller_Gen::InitGenerator_RadMoller(){
     se = 4.*Ecmp*Ecmp; //Elastic Mandelstam S ("s" was unavail
     dE = dE_frac*sqrt(se);
     EkMax = (Ecm*Ecm-4.*me*me)/(2.*Ecm);
-
     ekDist = new TH1D("ekDist","Ek Distribution",1000,dE,EkMax);
     tkDist = new TH1D("tkDist","Theta K Distribution",1000,tkCut,pi-tkCut);
     tqrDist = new TH1D("tqrDist","Theta K Distribution",1000,tqrCut,pi-tqrCut);
 
     for (int i = 0; i<ekDist->GetNbinsX(); i++)
         {
-        ekDist->SetBinContent(i,1./(i+100.));
+        ekDist->SetBinContent(i,exp(-i/500.));
         }
     ekDist->Scale(1./ekDist->Integral("width"));
 
@@ -233,12 +235,12 @@ void RadMoller_Gen::InitGenerator_RadMoller(){
 
 void RadMoller_Gen::Generate_Event(){
     pqr = twopi*randomGen();
-    Ek   = GetHistRandom(ekDist);//dE+(EkMax-dE)*randomGen();
+    Ek   = GetHistRandom(ekDist);//ekDist->GetRandom();//dE+(EkMax-dE)*randomGen();
     tk   = tkCut+(pi-2.*tkCut)*randomGen();//GetHistRandom(tkDist);
-    tqr  = GetHistRandom(tqrDist);//tqrCut+(pi-2.*tqrCut)*randomGen();
-    ekWeight   =1./ekDist->GetBinContent(ekDist->FindBin(Ek));//EkMax-dE;
+    tqr  = GetHistRandom(tqrDist);//tqrDist->GetRandom();//tqrCut+(pi-2.*tqrCut)*randomGen();
+    ekWeight   =1./ekDist->Interpolate(Ek);//EkMax-dE;
     tkWeight   = pi-2.*tkCut;//1./tkDist->GetBinContent(tkDist->FindBin(tk));
-    tqrWeight  = 1./tqrDist->GetBinContent(tqrDist->FindBin(tqr));//pi-2.*tqrCut;
+    tqrWeight  = 1./tqrDist->Interpolate(tqr);//tqrDist->GetBinContent(tqrDist->FindBin(tqr));//pi-2.*tqrCut;
     pqrWeight = twopi;
     phik = twopi*randomGen();
     xe = xeCut+(pi-xeCut)*randomGen(); //Elastic Angle
