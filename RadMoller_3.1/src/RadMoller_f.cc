@@ -37,10 +37,10 @@ void RadMoller_Gen::SetTCuts(double tqrc0, double tqrc1, double pq0, double pq1)
     }
 
         cout<<"You Requested: "<<endl;
-        cout<<"Min Electron_1 Theta = "<<tqrc0<<endl;
-        cout<<"Max Electron_1 Theta = "<<tqrc1<<endl;
-        cout<<"Min Electron_1 Phi = "<<pq0<<endl;
-        cout<<"Max Electron_1 Phi = "<<pq1<<endl;
+        cout<<"Min Lepton_1 Theta = "<<tqrc0<<endl;
+        cout<<"Max Lepton_1 Theta = "<<tqrc1<<endl;
+        cout<<"Min Lepton_1 Phi = "<<pq0<<endl;
+        cout<<"Max Lepton_1 Phi = "<<pq1<<endl;
         
         tkCut0 = 0.;
         tkCut1 = TMath::Pi();
@@ -142,7 +142,7 @@ double RadMoller_Gen::soft_cs_tsai(double x, double dE){
    (9.*pi*(pow(te(x),4) + pow(ue(x),4) + pow(se,2)*pow(te(x) + ue(x),2)));
 }
 
-//Soft corrections to Bhabha scattering (A.B. Arbuzov, E.S. Scherbakova) & Glover, Tausk, van der Bij
+//Soft corrections to Bhabha scattering (A.B. Arbuzov, E.S. Scherbakova)
 double RadMoller_Gen::soft_bhabha(double x, double dE){
     return (alpha*(-2*(6 + pow(pi,2)) - 6*TMath::DiLog(-(te(x)/se)) + 6*TMath::DiLog(1 + te(x)/se) + 
        9*log(se/pow(me,2)) + 12*log(dE/Ecmp)*
@@ -219,7 +219,7 @@ double RadMoller_Gen::bremCSb(double Ek,
     }
 
 
-void RadMoller_Gen::InitGenerator_RadMoller(){
+void RadMoller_Gen::InitGenerator(){
     me = 0.510998910;
     Ebeam = Tbeam+me;
     alpha = 1./137.035999074;
@@ -335,14 +335,14 @@ void RadMoller_Gen::Generate_Event(){
             delete newAxis;
             newAxis = new TVector3(-sin(tqr)*cos(pqr),-sin(tqr)*sin(pqr),-cos(tqr));
 
-            tk  = (pi-TMath::ACos(cosaMax))*randomGen();
+            tk  = TMath::ACos(1.-(1.+cosaMax)*randomGen());
 
             phik = twopi*randomGen();
 
             kcm = new TLorentzVector(Ek*sin(tk)*cos(phik),Ek*sin(tk)*sin(phik),Ek*cos(tk),Ek);
             kcm->RotateUz(*newAxis);
 
-            tkWeight  = (1.+cosaMax)*sin(tk);
+            tkWeight  = (1.+cosaMax);
             phikWeight = twopi;
 
             if (aRand>0.5){
