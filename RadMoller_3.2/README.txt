@@ -1,6 +1,6 @@
 Radiative Moller/Bhabha Generator
 Charles Epstein, MIT
-Version 3.1, June 2014
+Version 3.2, July 2014
 
 
 ===	Overview	===
@@ -29,14 +29,50 @@ mkdir build
 cd build
 cmake ..
 make
-./RadMoller [nEve]
 
-where [nEve] is the desired number of events.  It is recommended to keep this in sets of less than ~(a few)*10^6 in order to prevent output file sizes from becoming unreasonable.  Generation of such a number of events typically takes less than a minute.
+=== Command-Line Usage ===
 
+Operating help:
 
-===	Usage		===
+  usage: ./RadMoller  [OPTIONS]
+   -M | --Moller                     : generator:  Moller
+   -B | --Bhabha                         : generator:  Bhabha
+   -T | --thetaCut  <lepTH_[lower]_[upper]>  : theta cuts, use --longHelp for details  
+   -P | --phiCut  <lepPHI_[lower]_[upper]>  : phi cuts, use --longHelp for details  
+   -E | --Tbeam <100>                      : Beam kinetic Energy [MeV] 
+   -f | --radFrac <0.75>                      : Fraction of events that are radiative 
+   -L | --Lumi <1e30>                      : Luminosity in cm^-2s^-1 
+   -d | --dE_frac <1e-4>                      : Delta-E as a fraction of sqrt(s) 
+   -n | --nEve <10>                      : number of generated events 
+   -r | --root_flag                      : output TNtuple? 
+   -t | --txt_flag                       : output txt file? 
 
-User-specified parameters are set in int main().  They are:
+   -h | --help         : this short help
+   -H | --longHelp     : detailed explanation of switches
+
+	------ Generator Selection --------
+      enabled by switch  --Moller or  --Bhabha 
+      Expected content of --thetaCut  lepTH_[ang1]_[ang2]  
+         the range of theta for the electron (positron) is [ang1, ang2], float values in radians 
+       
+       Example: to generate mollers for theta=[0.01,3.14] and phi=[0.0,6.28] use flags  
+                 ...  -M  -T lepTH_0.01_3.14 -P lepPHI_0.0_6.28 .... 
+       or Bhabha   ...  -B  -T lepTH_0.01_3.14 -P lepPHI_0.0_6.28  .... 
+       Note - default phi range is [0,2pi]
+
+Example:
+
+./RadMoller -M -n 10000 -E 2000 -f 1 -T lepTH_0.01_3.14 -P lepPHI_0.0_6.28 -d 1e-3 -L 1e36 -r -t
+
+Or, using some defaults:
+
+./RadMoller -M -n 10000 -E 100
+
+(etc)
+
+===	Further Usage Info ===
+
+User-specified parameters are:
 
 int root_flag = 1; //1 = Output TNtuple of event parameters
 int txt_flag = 1;  //1 = Output txt file of event parameters

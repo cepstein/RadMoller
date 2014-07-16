@@ -13,21 +13,39 @@ class RadMoller_Gen {
         void SetECut(double);
         void SetLumi(double);
         void SetTBeam(double);
+        void SetCM();
+        void SetLab();
         void SetMoller();
         void SetBhabha();
         void Generate_Event();
         int GetElFlag(){return elFlag;}
         double GetWeight(){return weight;}
         // double GetHistRandom(TH1D*);
-        TLorentzVector* Getq1(){return q1;}
-        TLorentzVector* Getq2(){return q2;}
-        TLorentzVector* Getk(){return k;}
+        TLorentzVector* Getq1(){
+            if(CM_flag==1){
+                return q1cm;}
+            else{
+                return q1;}
+        }
+        TLorentzVector* Getq2(){            
+            if(CM_flag==1){
+                return q2cm;}
+            else{
+                return q2;}
+        }
+        TLorentzVector* Getk(){
+            if(CM_flag==1){
+                return kcm;}
+            else{
+                return k;}
+        }
         double mCSfunc(double,double);
         double dEr(){return Ek;}
     private:
         double randomGen();
 
         int mb_flag;
+        int CM_flag;
 
         int elFlag;
         double symWeight(double, double);
@@ -70,18 +88,19 @@ class RadMoller_Gen {
         double q1l(TVector3*, TLorentzVector*);
 
         double ekFunc(double);
-        double tkFunc(double);
+        double tkFunc(double,double);
         double tqrFunc(double);
         double tqrFunc_Moller(double);
 
         double ekiCDF(double);
-        double tkiCDF(double);
+        double tkCDF(double,double);
         double tqriCDF(double);
         double tqriCDF_Moller(double);
+        double tkInvert(double,double);
 
         double pqr;
         double weight;
-
+        double eFlag;
         double Ek;
         double tk;
         double tqr;
@@ -126,10 +145,12 @@ class RadMoller_Gen {
         TLorentzVector *p1;
         TLorentzVector *p2;
         TLorentzVector *qcm;
+        TLorentzVector *qr;
 
         TVector3 *q1r;
         TVector3 *newAxis;
 
+        TLorentzVector *q2r;
 
         TLorentzVector *q1cm;
         TLorentzVector *q2cm;

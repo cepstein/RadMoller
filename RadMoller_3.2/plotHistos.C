@@ -54,5 +54,16 @@
     w_int->Draw();
     gPad->SetLogy();
     
+    FILE *oFile;
+    oFile = fopen("output_ptpz.txt","w");
+    for(int i = 0;i<ptpz->GetNbinsX();i++){
+        for(int j = 0;j<ptpz->GetNbinsY();j++){
+            // if(ptpz->GetBinContent(i,j)>0){
+            fprintf(oFile,"%.3f\t%.3f\t%.3f\t%.3f\n",ptpz->GetXaxis()->GetBinCenter(i),
+                ptpz->GetYaxis()->GetBinCenter(j),ptpz->GetBinContent(i,j),ptpz->GetBinError(i,j));
+        // }
+}
+}
+    fclose(oFile);
 
 }

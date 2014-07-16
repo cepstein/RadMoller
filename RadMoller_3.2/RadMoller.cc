@@ -1,10 +1,12 @@
 //================================================================================
 //================================================================================
+//================================================================================
 //
 //      Radiative Moller/Bhabha Generator
 //      Charles Epstein, MIT, Spring 2014
 //      Soft Radiative Corrections based on Tsai, 1960 (Moller); 
-//            (A.B. Arbuzov, E.S. Scherbakova 2006) (Bhabha);
+//            (A.B. Arbuzov, E.S. Scherbakova 2006) (Bhabha 1st Order);
+//            Glover,Tausk, & Bij, 2001 (Bhabha 2nd order)
 //      Hard Brehmsstralung calculated using FeynArts & FormCalc
 //            for unpolarized e-e->e-e-y and e+e->e+e-y scattering
 //
@@ -28,66 +30,190 @@
 #include "TStyle.h"
 #include <complex>
 #include <stdio.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <getopt.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <errno.h>
+#include <assert.h>
 
-
+void argUsage(char  *argv0 , const char *message=NULL);
+void argUsageLong(const char *message=NULL);
+void setRandomSeed(char *cSeed);
 
 TRandom3 *randGen = new TRandom3(0);
 double RadMoller_Gen::randomGen(){
     return randGen->Uniform();
 }
 
-double version = 3.0;
+double version = 3.2;
 
-int main(int argc, char* argv[])
-    {
-    if (argc<2){
-        cout<<"Usage: ./RadMoller [nEve]"<<endl;
-        return 1;
-    }
-    long nEve = atoi(argv[1]); 
 
-    
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+
+int main(int argc,char** argv){
+  char  *userName    = getenv("USER");
+
+  long    nEve=3;
+  int    root_flag = false;
+  int    txt_flag = false;
+  int   Moller = false;
+  int   Bhabha = false;
+  char  *thetaCut  = (char *)"lepTH_0.001_3.14159";
+  char  *phiCut  = (char *)"lepPHI_0_6.2831853";
+  double  Tbeam  = 2000.;
+  double  radFrac  = 1.;
+  double  Lumi     = 1.e36;//1.e36 cm^2 s^-1 - gives CS in picobarns
+  double dE_frac   = 1.e-4;//CMS photon energy cutoff as fraction of S
+
+  //============================================================
+  {//========================== START argv parsing ============== for 100+ lines
+      // working variables
+  int    optInd   = 0;
+  char   optChar  = 0;  
+
+  static struct option optLong[] = {
+    { "root_flag"  , 0 , &root_flag    , true },
+    { "txt_flag"  , 0 , &txt_flag    , true },
+    { "Moller"    , 0 , 0    , 'M' },
+    { "Bhabha"    , 0 , 0    , 'B' },
+    { "help"       , 0 , 0    , 'h' },
+    { "longHelp"   , 0 , 0    , 'H' },
+    { "nEve"     , 1 , 0    , 'n' }, // has one param & is equivalent to -n
+    { "thetaCut"  , 1 , 0    , 'T' },
+    { "phiCut"  , 1 , 0    , 'P' },
+    { "Tbeam"  , 1 , 0    , 'E' },
+    { "Lumi"  , 1 , 0    , 'L' },
+    { "dE_frac"  , 1 , 0    , 'd' },
+    { "radFrac"  , 1 , 0    , 'f' },
+    { 0, 0, 0, 0}
+  };
+
+
+  char  * argv0 = argv[0];
+  
+  opterr = 0;
+  while((optChar = getopt_long(argc,argv,"rtT:P:n:E:f:L:d:MBhH",optLong,&optInd)) != EOF) {
+    switch(optChar) {
+    case  0  :   break;
+    case 'r' : root_flag  = true;    break; 
+    case 't' : txt_flag  = true;    break; 
+    case 'T' : thetaCut  = optarg;  break; 
+    case 'P' : phiCut  = optarg;  break; 
+    case 'n' : nEve      = atoi(optarg);     break; 
+    case 'E' : Tbeam  = atof(optarg);  break; 
+    case 'f' : radFrac  = atof(optarg);  break; 
+    case 'L' : Lumi  = atof(optarg);  break; 
+    case 'd' : dE_frac  = atof(optarg);  break; 
+    case 'M' : Moller = true; break;
+    case 'B' : Bhabha = true; break;
+    case 'h' : argUsage(argv0); return(0);     break;
+    case 'H' : argUsage(argv0);  argUsageLong(argv0);  return(0);       break;
+    case '?':   
+      if (isprint (optopt))
+    fprintf (stderr, "\nUnknown option `-%c'\n\n", optopt);
+      else
+    fprintf (stderr,"\nUnknown option character `\\x%x'.\n\n",optopt);
+    default  : argUsage(argv0,"unknown option");    break;
+    };
+  }
+  
+ /* Print any remaining command line arguments (not options).   */
+  if (optind < argc)    {
+      printf ("\n WARN, non-options ARGV-elements: ");
+      while (optind < argc) 
+    printf ("%s ", argv[optind++]);
+      putchar ('\n');
+      return -3;
+  }
+
+  printf("\n**** Final paramater choice made by user=%s  *** \n",userName);
+  printf("Executing  %s  nEve=%d  \n",argv0,nEve);
+  printf("physics:  thetaCut=%s  phiCut=%s  dE/Ecm=%f  Tbeam/MeV=%f \n", thetaCut,phiCut,dE_frac,Tbeam);
+  printf("output: TNtuple=%d  txt=%d    \n",root_flag, txt_flag);
+
+}
+
+    double tqrCut0;
+    double tqrCut1;
+
+    double phiq0;
+    double phiq1;
+
+    TString *parList = new TString(thetaCut);
+    TObjArray * objA=parList->Tokenize("_");
+    TIter*  iter = new TIter(objA);  
+    TObject* obj = 0;
+    int k=0;
+    while( (obj=iter->Next())) {    
+      k++;
+      TString ss= (( TObjString *)obj)->GetString();
+      switch (k) {
+      case 1: assert(ss=="lepTH"); break;            
+      case 2: tqrCut0=atof(ss.Data()); break;
+      case 3: tqrCut1=atof(ss.Data()); break;
+      default:
+        assert(345==33987); // unexpected
+      }
+    }// end of while
+    assert(tqrCut1>0);
+    assert(tqrCut1>tqrCut0);
+
+    delete parList;
+    delete iter;
+    parList = new TString(phiCut);
+    objA=parList->Tokenize("_");
+    iter = new TIter(objA);  
+    obj = 0;
+    k=0;
+    while( (obj=iter->Next())) {    
+      k++;
+      TString ss= (( TObjString *)obj)->GetString();
+      switch (k) {
+      case 1: assert(ss=="lepPHI"); break;            
+      case 2: phiq0=atof(ss.Data()); break;
+      case 3: phiq1=atof(ss.Data()); break;
+      default:
+        assert(345==33987); // unexpected
+      }
+    }// end of while
+    assert(phiq1>0);
+    assert(phiq1>phiq0);
+
     //Constants that must be set:
-    //Output Flags
-    int root_flag = 1; //1 = Output TNtuple of event parameters
-    int txt_flag = 1;  //1 = Output txt file of event parameters
-    double radFrac = 0.75; //Fraction of events that are radiative (purely statistical)
     double pi = 4.0*atan(1.0);
+    
 
-    //CMS Phase-space cuts on outgoing particles
-    double tqrCut0 = 1*pi/180.;
-    double tqrCut1 = 179*pi/180.;
+    double tkCut0 = 0;
+    double tkCut1 = pi-tkCut0;
+    
 
-    double phiq0 = 0.;
-    double phiq1 = 2.*pi;
-
-    double dE_frac = 1.e-3;//CMS photon energy cutoff as fraction of S
-
-    //const double Lumi = 1.e30; //cm^2 s^-1 - gives CS in microbarns
-    double Lumi = 6.e35;
-
-    //Beam Kinetic Energy
-    double Tbeam = 100.; 
-
-
-    //=========================================================
-    //=========================================================
     //=========================================================
     //  Initialize Generator
     RadMoller_Gen* rMollerGen = new RadMoller_Gen;
-    rMollerGen->SetMoller();
+    if(Moller==true){rMollerGen->SetMoller();}
+    else if(Bhabha==true){rMollerGen->SetBhabha();}
+    else{
+        cout<<"Improper process selection. Pick '-M' or '-B'"<<endl;
+        return 0;
+        }
     rMollerGen->SetRadFrac(radFrac);
-    rMollerGen->SetTCuts(tqrCut0,tqrCut1,phiq0,phiq1);
+    rMollerGen->SetTCuts(tqrCut0,tqrCut1,phiq0,phiq1);    
     rMollerGen->SetECut(dE_frac);
     rMollerGen->SetLumi(Lumi);
     rMollerGen->SetTBeam(Tbeam);
     rMollerGen->InitGenerator_RadMoller();
+    
+
+
     //
+    //======================================================================
     //=========================================================
     //=========================================================
-    //=========================================================
-
-
     TFile *f = new TFile("histos.root","recreate");
     TFile *fout = new TFile("radEve.root","recreate");
     FILE *eFile;
@@ -98,7 +224,7 @@ int main(int argc, char* argv[])
     fprintf(oFile,"Generator Summary:\n");
     fprintf(oFile,"Number of Events: %.1f\n",nEve);
     fprintf(oFile,"Beam Energy: %.1f\tDelta E Fraction: %.3f\tLuminosity: %.2f\tRadiative Fraction: %.3f\n",Tbeam,dE_frac,Lumi,radFrac);
-    fprintf(oFile,"Lepton 1 Theta Cuts: %.3f\t %.3f\t Lepton 1 Phi Cuts: %.3f\t %.3f\n",tqrCut0,tqrCut1,phiq0,phiq1);
+    fprintf(oFile,"Photon Theta Cuts: %.3f\t %.3f\t  Lepton 1 Theta Cuts: %.3f\t %.3f\t Lepton 1 Phi Cuts: %.3f\t %.3f\n",tkCut0,tkCut1,tqrCut0,tqrCut1,phiq0,phiq1);
     if(txt_flag){
         fprintf(eFile,"Weight\tP1x\tP1y\tP1z\tP2z\tP2y\tP2z\tKx\tKy\tKz\n");
     }
@@ -268,3 +394,43 @@ int main(int argc, char* argv[])
     return EXIT_SUCCESS;
     } 
 
+void argUsage(char  *argv0 , const char *message){
+  if (message) fprintf(stderr,"%s: %s\n",argv0,message);
+  fprintf(stderr,"usage: %s  [OPTIONS]\n",argv0);
+  fprintf(stderr," -M | --Moller                     : generator:  Moller\n");
+  fprintf(stderr," -B | --Bhabha                         : generator:  Bhabha\n");
+  fprintf(stderr," -T | --thetaCut  <lepTH_[lower]_[upper]>  : theta cuts, use --longHelp for details  \n");
+  fprintf(stderr," -P | --phiCut  <lepPHI_[lower]_[upper]>  : phi cuts, use --longHelp for details  \n");
+  fprintf(stderr," -E | --Tbeam <100>                      : Beam kinetic Energy [MeV] \n");
+  fprintf(stderr," -f | --radFrac <0.75>                      : Fraction of events that are radiative \n");
+  fprintf(stderr," -L | --Lumi <1e30>                      : Luminosity in cm^-2s^-1 \n");
+  fprintf(stderr," -d | --dE_frac <1e-4>                      : Delta-E as a fraction of sqrt(s) \n");
+  fprintf(stderr," -n | --nEve <10>                      : number of generated events \n");
+  fprintf(stderr," -r | --root_flag                      : output TNtuple? \n");
+  fprintf(stderr," -t | --txt_flag                       : output txt file? \n");
+
+  fprintf(stderr," -h | --help         : this short help\n");
+  fprintf(stderr," -H | --longHelp     : detailed explanation of switches\n");
+  if(message) exit(-1);
+  return;
+}
+
+//----------------------------------------
+void argUsageLong(const char *message){
+  fprintf(stderr,"\n -------------------------------\nDetailed explanation of switches %s\n",message); 
+
+
+  fprintf(stderr,"\n*)------ Generator Selection --------\n"
+      "enabled by switch  --Moller or  --Bhabha \n"
+      "Expected content of --thetaCut  lepTH_[ang1]_[ang2] \n" 
+      "   the range of theta for the electron (positron) is [ang1, ang2], float values in radians\n" 
+      " \n"
+      " Example: to generate mollers for theta=[0.01,3.14] and phi=[0.0,6.28] use flags  \n"
+      "           ...  -M  -T lepTH_0.01_3.14 -P lepPHI_0.0_6.28 .... \n"
+      " or Bhabha   ...  -B  -T lepTH_0.01_3.14 -P lepPHI_0.0_6.28  .... \n"
+      " Note - default phi range is [0,2pi]\n"
+      "\n");
+
+
+
+}
