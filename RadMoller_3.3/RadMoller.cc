@@ -48,7 +48,7 @@ double RadMoller_Gen::randomGen(){
     return randGen->Uniform();
 }
 
-double version = 3.2;
+double version = 3.3;
 
 
 //---------------------------------------------------------------------
@@ -65,10 +65,10 @@ int main(int argc,char** argv){
   int   Bhabha = false;
   char  *thetaCut  = (char *)"lepTH_0.001_3.14159";
   char  *phiCut  = (char *)"lepPHI_0_6.2831853";
-  double  Tbeam  = 2000.;
+  double  Tbeam  = 100.;
   double  radFrac  = 1.;
   double  Lumi     = 1.e36;//1.e36 cm^2 s^-1 - gives CS in picobarns
-  double dE_frac   = 1.e-4;//CMS photon energy cutoff as fraction of S
+  double dE_frac   = 1.e-2;//CMS photon energy cutoff as fraction of S
 
   //============================================================
   {//========================== START argv parsing ============== for 100+ lines

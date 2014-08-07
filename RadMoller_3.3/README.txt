@@ -1,6 +1,6 @@
 Radiative Moller/Bhabha Generator
 Charles Epstein, MIT
-Version 3.2, July 2014
+Version 3.3, August 2014
 
 
 ===	Overview	===
@@ -9,11 +9,9 @@ This generator outputs two types of events:
 
 Soft-corrected elastic events-
 
-Accounts for soft radiative corrections, ie σ'=(1+δ)σ —-> σ'=exp(δ)σ where soft (undetectable) photons are emitted.  The exponentiation	accounts for the effects of multiple soft photons.
+Accounts for soft radiative corrections, ie σ'=(1+δ)σ where soft (undetectable) photons are emitted.  
 
-The correction factor for Moller scattering consists of the corrections of Tsai (1960).  Previously included was the option for the corrections of Denner & Pozzorini (1999), which are temporarily removed from the release.  The latter is more relevant at high energies and includes weak interaction effects.
-
-For Bhabha scattering, the soft corrections of (A.B. Arbuzov, E.S. Scherbakova) are taken into account.  
+The correction factor for Moller scattering consists of the corrections of Tsai (1960).  For Bhabha scattering, the soft corrections of (A.B. Arbuzov, E.S. Scherbakova) are taken into account.  
 
 Bremsstrahlung events-
 

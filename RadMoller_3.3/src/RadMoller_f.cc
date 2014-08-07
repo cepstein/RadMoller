@@ -215,13 +215,13 @@ double RadMoller_Gen::mCSfunc(double x, double dE)
         //Exponentiating: CS_soft = CS_tree x exp(delta), with delta = soft cs correction / tree cs
         //Instead of 1 + delta, it is exp(delta), to account for multiple soft photons
         //Includes factor of 2*pi*sin(theta) to make it d_sigma/d_theta
-        return Lumi*hbarc2*tree_cs(x)*exp(soft_cs_tsai(x,dE));
+        return Lumi*hbarc2*tree_cs(x)*(1.+soft_cs_tsai(x,dE));
     }
 
 double RadMoller_Gen::bCSfunc(double x, double dE)
     {
         //Extra factor of two because e+,e- are distinguishable 
-        return 2.0*Lumi*hbarc2*tree_cs_b(x)*exp(soft_bhabha(x,dE));
+        return 2.0*Lumi*hbarc2*tree_cs_b(x)*(1.+soft_bhabha(x,dE));
     }
 
 
@@ -388,21 +388,25 @@ double RadMoller_Gen::ekiCDF(double rand){
 
 void RadMoller_Gen::Generate_Event(){
     
-    if(mb_flag==1){//Moller
-        tqr  = (tqriCDF_Moller(randomGen()));//tqrCut0+(tqrCut1-tqrCut0)*randomGen();//
-        tqrWeight  = sin(tqr)/tqrFunc_Moller(tqr);//tqrCut1-tqrCut0;//1./tqrFunc(tqr);
+    // if(mb_flag==1){//Moller
+    //     tqr  = (tqriCDF_Moller(randomGen()));//tqrCut0+(tqrCut1-tqrCut0)*randomGen();//
+    //     tqrWeight  = sin(tqr)/tqrFunc_Moller(tqr);//tqrCut1-tqrCut0;//1./tqrFunc(tqr);
 
-    }
-    else{//Bhabha
-        tqr  = (tqriCDF(randomGen()));//tqrCut0+(tqrCut1-tqrCut0)*randomGen();//
-        tqrWeight  = sin(tqr)/tqrFunc(tqr);//tqrCut1-tqrCut0;//1./tqrFunc(tqr);
+    // }
+    // else{//Bhabha
+    //     tqr  = (tqriCDF(randomGen()));//tqrCut0+(tqrCut1-tqrCut0)*randomGen();//
+    //     tqrWeight  = sin(tqr)/tqrFunc(tqr);//tqrCut1-tqrCut0;//1./tqrFunc(tqr);
 
-        // tqr  = TMath::ACos(tqriCDF(randomGen()));//tqrCut0+(tqrCut1-tqrCut0)*randomGen();//
-        // tqrWeight  = 1./tqrFunc(TMath::Cos(tqr));//tqrCut1-tqrCut0;//1./tqrFunc(tqr);
-    // tqr = TMath::ACos(tqrCut0+(tqrCut1-tqrCut0)*randomGen());
-    // tqrWeight = tqrCut1-tqrCut0;
-    }
+    //     // tqr  = TMath::ACos(tqriCDF(randomGen()));//tqrCut0+(tqrCut1-tqrCut0)*randomGen();//
+    //     // tqrWeight  = 1./tqrFunc(TMath::Cos(tqr));//tqrCut1-tqrCut0;//1./tqrFunc(tqr);
+    // // tqr = TMath::ACos(tqrCut0+(tqrCut1-tqrCut0)*randomGen());
+    // // tqrWeight = tqrCut1-tqrCut0;
+    // }
 
+
+    tqr = tqrCut0+(tqrCut1-tqrCut0)*randomGen();
+    tqrWeight = sin(tqr)*(tqrCut1-tqrCut0);
+    
     pqr = phiq0+(phiq1-phiq0)*randomGen();
     pqrWeight = phiq1-phiq0;
 
