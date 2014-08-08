@@ -1,6 +1,6 @@
 Radiative Moller/Bhabha Generator
 Charles Epstein, MIT
-Version 3.3, August 2014
+Version 3.4, August 2014
 
 
 ===	Overview	===

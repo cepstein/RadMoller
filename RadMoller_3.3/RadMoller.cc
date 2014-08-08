@@ -48,7 +48,7 @@ double RadMoller_Gen::randomGen(){
     return randGen->Uniform();
 }
 
-double version = 3.3;
+double version = 3.4;
 
 
 //---------------------------------------------------------------------

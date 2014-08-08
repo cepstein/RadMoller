@@ -32,6 +32,10 @@ void RadMoller_Gen::SetRadFrac(double rdf){
 // }
 
 double RadMoller_Gen::symWeight(double tq2, double pq2){
+    while(pq2<0){
+        pq2 = pq2 + twopi;
+    }
+
     double symFactor;
     if((tq2 < tqrCut1) && (tq2 > tqrCut0) && (pq2 < phiq1) && (pq2 > phiq0)){
         symFactor = 1.;
