@@ -173,12 +173,32 @@ double RadMoller_Gen::M2b(double x)
 
 //Tsai's Soft Corrections - Moller
 double RadMoller_Gen::soft_cs_tsai(double x, double dE){
-    return (alpha*(-46*pow(se,2)*pow(te(x) + ue(x),2) - 46*(pow(te(x),4) + pow(ue(x),4)) + 
-       33*(pow(ue(x),4) + pow(se,2)*ue(x)*(te(x) + ue(x)))*log(-(te(x)/pow(me,2))) + 
-       33*te(x)*(pow(te(x),3) + pow(se,2)*(te(x) + ue(x)))*log(-(ue(x)/pow(me,2))) - 
-       36*(pow(te(x),4) + pow(ue(x),4) + pow(se,2)*pow(te(x) + ue(x),2))*log(Ecmp/dE)*
-        (-1 + log((te(x)*ue(x))/(pow(me,2)*se)))))/
-   (9.*pi*(pow(te(x),4) + pow(ue(x),4) + pow(se,2)*pow(te(x) + ue(x),2)));
+    return (pow(te(x),2)*pow(ue(x),2)*(-((pow(me,2)*
+            (pow(te(x),4) + pow(ue(x),4) + pow(se,2)*pow(te(x) + ue(x),2)))/
+          (pow(te(x),2)*pow(ue(x),2))) - 
+       (alpha*pow(me,2)*(2*pow(se,2)*te(x)*(se + te(x))*log(-1 - se/te(x)) - 
+            (se + te(x))*(2*se + te(x))*(2*pow(se,2) + 3*se*te(x) + 2*pow(te(x),2))*
+             pow(log(-1 - se/te(x)),2) + 
+            2*te(x)*pow(se + te(x),3)*log(-(se/te(x))) + 
+            (se + te(x))*(2*se + te(x))*(2*pow(se,2) + se*te(x) + pow(te(x),2))*
+             pow(log(-(se/te(x))),2) + 
+            te(x)*log(-(te(x)/(se + te(x))))*
+             (2*pow(se,2)*(se + te(x)) + 
+               (pow(se,3) + se*pow(te(x),2) - 2*pow(te(x),3))*
+                log(-(te(x)/(se + te(x))))) + 
+            2*pow(te(x),3)*(se + te(x))*log(1/(1 + te(x)/se)) + 
+            (-2*pow(se,3)*te(x) + pow(se,2)*pow(te(x),2) + pow(te(x),4))*
+             pow(log(1/(1 + te(x)/se)),2)))/
+        (2.*pi*pow(te(x),2)*pow(se + te(x),2)) + 
+       (pow(me,2)*(pow(se,2) + (pow(se,2)*te(x))/ue(x) + pow(ue(x),2))*
+          (1 + (alpha*(-46 + 33*log(-(te(x)/pow(me,2))) - 
+                 36*log(Ecmp/dE)*(-1 + log((te(x)*ue(x))/(pow(me,2)*se)))))/(9.*pi)
+            ))/pow(te(x),2) + (pow(me,2)*
+          (pow(se,2) + pow(te(x),2) + (pow(se,2)*ue(x))/te(x))*
+          (1 + (alpha*(-46 + 33*log(-(ue(x)/pow(me,2))) - 
+                 36*log(Ecmp/dE)*(-1 + log((te(x)*ue(x))/(pow(me,2)*se)))))/(9.*pi)
+            ))/pow(ue(x),2)))/
+   (pow(me,2)*(pow(te(x),4) + pow(ue(x),4) + pow(se,2)*pow(te(x) + ue(x),2)));
 }
 
 //Soft corrections to Bhabha scattering (A.B. Arbuzov, E.S. Scherbakova) & Glover, Tausk, van der Bij
