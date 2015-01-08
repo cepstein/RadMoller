@@ -83,33 +83,47 @@ double GenIntegrator::cdfInvert(double iVal, double *vec){
 	double *CDF = new double [nBins];
 	CDF[0] = 0;
 	for(int i=1; i<nBins; i++){
-		if(vec[i]<0){cout<<"ERROR < 0 in PDF"<<endl;}
-		if(std::isnan(vec[i])){cout<<"ERROR NAN in PDF"<<endl;}
-
 		CDF[i]=0.5*(vec[i]+vec[i-1])/total+CDF[i-1];
 	}
+	if(0){
+		// cout<<"Old method"<<endl;
+		while((uVal-lVal)/(uVal+lVal)>1.e-3){
+			val = 0.5*(lVal+uVal);
+			int ind = floor(val);
+			double diff = val - ind;
+			double evalCDF = CDF[ind]+diff*0.5*(vec[ind]+getVal(val,vec))/total;
 
-	int counter = 0;
-
-	while((uVal-lVal)/(uVal+lVal)>1.e-3){
-		val = 0.5*(lVal+uVal);
-		int ind = (int) floor(val);
-		double diff = val - ind;
-		double evalCDF = CDF[ind]+diff*0.5*(vec[ind]+getVal(val,vec))/total;
-
-		if(evalCDF<iVal){lVal=val;}
-		else if(evalCDF>iVal){uVal=val;}
-		if (counter>999){
-			cout<<"Infinite loop! Precision: "<<(uVal-lVal)/(uVal+lVal)<<endl;
-			cout<<"Checks: "<<CDF[0]<<" and "<<CDF[nBins-1]<<endl;
-			break;
+			if(evalCDF<iVal){lVal=val;}
+			else if(evalCDF>iVal){uVal=val;}
 		}
-		counter++;
+	}
+	if(1){
+		int indL;
+		// cout<<"Starting"<<endl;
+		for (int i = 0; i<nBins;i++){
+			if (CDF[i]>iVal){
+				indL = i-1;
+				break;
+			}
+		}
+		// cout<<"Found bin"<<endl;
+		if (vec[indL]==vec[indL+1]){
+			val = (iVal-CDF[indL])/(vec[indL]/total)+indL;
+			// cout<<"Same"<<endl;
+		}
+		else if (abs((vec[indL]-vec[indL+1])/(vec[indL]+vec[indL+1]))<1.e-10){
+			val = (iVal-CDF[indL])/(vec[indL]/total)+indL;
+			// cout<<"Diff ish"<<vec[indL]<<" and "<<vec[indL+1]<<endl;
+
+		}
+		else{
+			val = (vec[indL]/total-sqrt(pow(vec[indL]/total,2.)-2.*(iVal-CDF[indL])*(vec[indL]/total-vec[indL+1]/total)))/(vec[indL]/total-vec[indL+1]/total)+indL;
+			// cout<<"Diff "<<vec[indL]<<" and "<<vec[indL+1]<<endl;
+		}
 	}
 	delete [] CDF;
 	return val;
 }	
-
 double* GenIntegrator::collapseVec(double *vec){
 	double *collapsedVec = new double[nBins];
 	for(int i=0;i<nBins;i++){
