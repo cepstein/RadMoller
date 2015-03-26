@@ -7,7 +7,8 @@
 #include "Math/Functor.h"
 #include "Math/RootFinder.h"
 #include "GenIntegrator.h"
-
+#include "TSystem.h"
+#include "TComplex.h"
 void RadMoller_Gen::setRandom(RandGen *rGen){
     random = rGen;
 }
@@ -193,55 +194,166 @@ double RadMoller_Gen::M2b(double x)
     }
 
 //Tsai's Soft Corrections - Moller
-double RadMoller_Gen::soft_cs_tsai(double x, double dE){
-    return (pow(te(x),2)*pow(ue(x),2)*(-((pow(me,2)*
-            (pow(te(x),4) + pow(ue(x),4) + pow(se,2)*pow(te(x) + ue(x),2)))/
-          (pow(te(x),2)*pow(ue(x),2))) - 
-       (alpha*pow(me,2)*(2*pow(se,2)*te(x)*(se + te(x))*log(-1 - se/te(x)) - 
-            (se + te(x))*(2*se + te(x))*(2*pow(se,2) + 3*se*te(x) + 2*pow(te(x),2))*
-             pow(log(-1 - se/te(x)),2) + 
-            2*te(x)*pow(se + te(x),3)*log(-(se/te(x))) + 
-            (se + te(x))*(2*se + te(x))*(2*pow(se,2) + se*te(x) + pow(te(x),2))*
-             pow(log(-(se/te(x))),2) + 
-            te(x)*log(-(te(x)/(se + te(x))))*
-             (2*pow(se,2)*(se + te(x)) + 
-               (pow(se,3) + se*pow(te(x),2) - 2*pow(te(x),3))*
-                log(-(te(x)/(se + te(x))))) + 
-            2*pow(te(x),3)*(se + te(x))*log(1/(1 + te(x)/se)) + 
-            (-2*pow(se,3)*te(x) + pow(se,2)*pow(te(x),2) + pow(te(x),4))*
-             pow(log(1/(1 + te(x)/se)),2)))/
-        (2.*pi*pow(te(x),2)*pow(se + te(x),2)) + 
-       (pow(me,2)*(pow(se,2) + (pow(se,2)*te(x))/ue(x) + pow(ue(x),2))*
-          (1 + (alpha*(-46 + 33*log(-(te(x)/pow(me,2))) - 
-                 36*log(Ecmp/dE)*(-1 + log((te(x)*ue(x))/(pow(me,2)*se)))))/(9.*pi)
-            ))/pow(te(x),2) + (pow(me,2)*
-          (pow(se,2) + pow(te(x),2) + (pow(se,2)*ue(x))/te(x))*
-          (1 + (alpha*(-46 + 33*log(-(ue(x)/pow(me,2))) - 
-                 36*log(Ecmp/dE)*(-1 + log((te(x)*ue(x))/(pow(me,2)*se)))))/(9.*pi)
-            ))/pow(ue(x),2)))/
-   (pow(me,2)*(pow(te(x),4) + pow(ue(x),4) + pow(se,2)*pow(te(x) + ue(x),2)));
+// double RadMoller_Gen::soft_cs_tsai(double x, double dE){
+//     return (pow(te(x),2)*pow(ue(x),2)*(-((pow(me,2)*
+//             (pow(te(x),4) + pow(ue(x),4) + pow(se,2)*pow(te(x) + ue(x),2)))/
+//           (pow(te(x),2)*pow(ue(x),2))) - 
+//        (alpha*pow(me,2)*(2*pow(se,2)*te(x)*(se + te(x))*log(-1 - se/te(x)) - 
+//             (se + te(x))*(2*se + te(x))*(2*pow(se,2) + 3*se*te(x) + 2*pow(te(x),2))*
+//              pow(log(-1 - se/te(x)),2) + 
+//             2*te(x)*pow(se + te(x),3)*log(-(se/te(x))) + 
+//             (se + te(x))*(2*se + te(x))*(2*pow(se,2) + se*te(x) + pow(te(x),2))*
+//              pow(log(-(se/te(x))),2) + 
+//             te(x)*log(-(te(x)/(se + te(x))))*
+//              (2*pow(se,2)*(se + te(x)) + 
+//                (pow(se,3) + se*pow(te(x),2) - 2*pow(te(x),3))*
+//                 log(-(te(x)/(se + te(x))))) + 
+//             2*pow(te(x),3)*(se + te(x))*log(1/(1 + te(x)/se)) + 
+//             (-2*pow(se,3)*te(x) + pow(se,2)*pow(te(x),2) + pow(te(x),4))*
+//              pow(log(1/(1 + te(x)/se)),2)))/
+//         (2.*pi*pow(te(x),2)*pow(se + te(x),2)) + 
+//        (pow(me,2)*(pow(se,2) + (pow(se,2)*te(x))/ue(x) + pow(ue(x),2))*
+//           (1 + (alpha*(-46 + 33*log(-(te(x)/pow(me,2))) - 
+//                  36*log(Ecmp/dE)*(-1 + log((te(x)*ue(x))/(pow(me,2)*se)))))/(9.*pi)
+//             ))/pow(te(x),2) + (pow(me,2)*
+//           (pow(se,2) + pow(te(x),2) + (pow(se,2)*ue(x))/te(x))*
+//           (1 + (alpha*(-46 + 33*log(-(ue(x)/pow(me,2))) - 
+//                  36*log(Ecmp/dE)*(-1 + log((te(x)*ue(x))/(pow(me,2)*se)))))/(9.*pi)
+//             ))/pow(ue(x),2)))/
+//    (pow(me,2)*(pow(te(x),4) + pow(ue(x),4) + pow(se,2)*pow(te(x) + ue(x),2)));
+// }
+
+Double_t RadMoller_Gen::SoftPhoton_Moller_Integrand(Double_t *x, Double_t *par){
+    double var = x[0];
+
+   //  return (sqrt(SD)*(-2 + TD)*log((sqrt(SD) + sqrt(-4 + SD + 4*TD*(1 - var)*var))/
+   //      (sqrt(SD) - sqrt(-4 + SD + 4*TD*(1 - var)*var))))/
+   //  ((1 - TD*(1 - var)*var)*sqrt(-4 + SD + 4*TD*(1 - var)*var)) + 
+   // (sqrt(SD)*(-2 + UD)*log((sqrt(SD) + sqrt(-4 + SD + 4*UD*(1 - var)*var))/
+   //      (sqrt(SD) - sqrt(-4 + SD + 4*UD*(1 - var)*var))))/
+   //  ((1 - UD*(1 - var)*var)*sqrt(-4 + SD + 4*UD*(1 - var)*var));
+        return ((TComplex::Sqrt(SD)*(-2 + TD)*TComplex::Log((TComplex::Sqrt(SD) + TComplex::Sqrt(-4 + SD + 4*TD*(1 - var)*var))/
+        (TComplex::Sqrt(SD) - TComplex::Sqrt(-4 + SD + 4*TD*(1 - var)*var))))/
+    ((1 - TD*(1 - var)*var)*TComplex::Sqrt(-4 + SD + 4*TD*(1 - var)*var)) + 
+   (TComplex::Sqrt(SD)*(-2 + UD)*TComplex::Log((TComplex::Sqrt(SD) + TComplex::Sqrt(-4 + SD + 4*UD*(1 - var)*var))/
+        (TComplex::Sqrt(SD) - TComplex::Sqrt(-4 + SD + 4*UD*(1 - var)*var))))/
+    ((1 - UD*(1 - var)*var)*TComplex::Sqrt(-4 + SD + 4*UD*(1 - var)*var))).Rho();
+
+}
+
+double RadMoller_Gen::SoftPhoton_Moller_Integral(){
+// gSystem->Load("libMathMore");
+   // cout<<(sqrt(SD)*(-2 + TD)*log((sqrt(SD) + sqrt(-4 + SD + 4*TD*(1 - 0.2)*0.2))/
+   //      (sqrt(SD) - sqrt(-4 + SD + 4*TD*(1 - 0.2)*0.2))))/
+   //  ((1 - TD*(1 - 0.2)*0.2)*sqrt(-4 + SD + 4*TD*(1 - 0.2)*0.2)) + 
+   // (sqrt(SD)*(-2 + UD)*log((sqrt(SD) + sqrt(-4 + SD + 4*UD*(1 - 0.2)*0.2))/
+   //      (sqrt(SD) - sqrt(-4 + SD + 4*UD*(1 - 0.2)*0.2))))/
+   //  ((1 - UD*(1 - 0.2)*0.2)*sqrt(-4 + SD + 4*UD*(1 - 0.2)*0.2))<<endl;
+   TF1 f("Integrand", this,&RadMoller_Gen::SoftPhoton_Moller_Integrand,0,0.5,0,"RadMoller_Gen","SoftPhoton_Moller_Integrand");
+   ROOT::Math::WrappedTF1 wf1(f);
+   // cout<<f(0.2)<<endl;
+   // Create the Integrator
+   ROOT::Math::GSLIntegrator ig(ROOT::Math::IntegrationOneDim::kADAPTIVE);
+   // Set parameters of the integration
+   ig.SetFunction(wf1);
+   ig.SetRelTolerance(0.0001);
+   return ig.Integral(0, 0.5);
+}
+
+double RadMoller_Gen::SoftPhoton_Moller(double x, double dE){
+    SD = se/(me*me);
+    UD = ue(x)/(me*me);
+    TD = te(x)/(me*me);
+    double III = SoftPhoton_Moller_Integral();
+    // return (2*alpha*(III + (2*sqrt(SD)*log((sqrt(-4 + SD) + sqrt(SD))/2.))/sqrt(-4 + SD) + 
+    //    4*log(me/(2.*dE))*(0.5 + ((-2 + SD)*log((sqrt(-4 + SD) + sqrt(SD))/2.))/
+    //        (sqrt(-4 + SD)*sqrt(SD)) + 
+    //       ((-2 + TD)*log((sqrt(4 - TD) + sqrt(-TD))/2.))/
+    //        (sqrt(4 - TD)*sqrt(-TD)) + 
+    //       ((-2 + UD)*log((sqrt(4 - UD) + sqrt(-UD))/2.))/
+    //        (sqrt(4 - UD)*sqrt(-UD))) + 
+    //    ((-4 + 2*SD)*(pow(pi,2)/6. + 
+    //         ((4 - SD)*pow(log((sqrt(-4 + SD) + sqrt(SD))/2.),2))/(-4 + SD) + 
+    //         log((sqrt(-4 + SD) + sqrt(SD))/2.)*log(-4 + SD) - 
+    //         TMath::DiLog((-2 + SD - sqrt(-4*SD + pow(SD,2)))/2.)))/
+    //     sqrt(-4*SD + pow(SD,2))))/pi;
+    return ((2*alpha*(III + (2*sqrt(SD)*TComplex::Log((TComplex::Sqrt(-4 + SD) + sqrt(SD))/2.))/TComplex::Sqrt(-4 + SD) + 
+       4*log(me/(2.*dE))*(0.5 + ((-2 + SD)*TComplex::Log((TComplex::Sqrt(-4 + SD) + sqrt(SD))/2.))/
+           (TComplex::Sqrt(-4 + SD)*sqrt(SD)) + 
+          ((-2 + TD)*TComplex::Log((TComplex::Sqrt(4 - TD) + sqrt(-TD))/2.))/
+           (TComplex::Sqrt(4 - TD)*TComplex::Sqrt(-TD)) + 
+          ((-2 + UD)*TComplex::Log((TComplex::Sqrt(4 - UD) + sqrt(-UD))/2.))/
+           (TComplex::Sqrt(4 - UD)*sqrt(-UD))) + 
+       ((-4 + 2*SD)*(pow(pi,2)/6. + 
+            ((4 - SD)*TComplex::Power(TComplex::Log((TComplex::Sqrt(-4 + SD) + sqrt(SD))/2.),2))/(-4 + SD) + 
+            TComplex::Log((TComplex::Sqrt(-4 + SD) + sqrt(SD))/2.)*TComplex::Log(-4 + SD) - 
+            TMath::DiLog((-2 + SD - sqrt(-4*SD + pow(SD,2)))/2.)))/
+        sqrt(-4*SD + pow(SD,2))))/pi).Rho();
+
+}
+
+Double_t RadMoller_Gen::SoftPhoton_Bhabha_Integrand(Double_t *x, Double_t *par){
+    double var = x[0];
+
+    return ((TComplex::Sqrt(SD)*(-2 + TD)*TComplex::Log((TComplex::Sqrt(SD) + TComplex::Sqrt(-4 + SD + 4*TD*(1 - var)*var))/
+        (TComplex::Sqrt(SD) - TComplex::Sqrt(-4 + SD + 4*TD*(1 - var)*var))))/
+    ((1 - TD*(1 - var)*var)*TComplex::Sqrt(-4 + SD + 4*TD*(1 - var)*var)) + 
+   (TComplex::Sqrt(SD)*(2 - UD)*TComplex::Log((TComplex::Sqrt(SD) + TComplex::Sqrt(-4 + SD + 4*UD*(1 - var)*var))/
+        (TComplex::Sqrt(SD) - TComplex::Sqrt(-4 + SD + 4*UD*(1 - var)*var))))/
+    ((1 - UD*(1 - var)*var)*TComplex::Sqrt(-4 + SD + 4*UD*(1 - var)*var))).Rho();
+}
+
+double RadMoller_Gen::SoftPhoton_Bhabha_Integral(){
+// gSystem->Load("libMathMore");
+   // cout<<SoftPhoton_Bhabha_Integrand(0.2)<<endl;
+   TF1 f("Integrand", this,&RadMoller_Gen::SoftPhoton_Bhabha_Integrand,0,1,0,"RadMoller_Gen","SoftPhoton_Bhabha_Integrand");
+   ROOT::Math::WrappedTF1 wf1(f);
+   // Create the Integrator
+   ROOT::Math::GSLIntegrator ig(ROOT::Math::IntegrationOneDim::kADAPTIVE);
+   // Set parameters of the integration
+   ig.SetFunction(wf1);
+   ig.SetRelTolerance(0.0001);
+   return ig.Integral(0, 0.5);
+}
+
+double RadMoller_Gen::SoftPhoton_Bhabha(double x, double dE){
+    SD = se/(me*me);
+    UD = ue(x)/(me*me);
+    TD = te(x)/(me*me);
+    double III = SoftPhoton_Bhabha_Integral();
+    return ((2*alpha*(III + (2*sqrt(SD)*TComplex::Log((TComplex::Sqrt(-4 + SD) + TComplex::Sqrt(SD))/2.))/TComplex::Sqrt(-4 + SD) + 
+       4*log(me/(2.*dE))*(0.5 + ((2 - SD)*TComplex::Log((TComplex::Sqrt(-4 + SD) + TComplex::Sqrt(SD))/2.))/
+           (TComplex::Sqrt(-4 + SD)*TComplex::Sqrt(SD)) + 
+          ((-2 + TD)*TComplex::Log((TComplex::Sqrt(4 - TD) + TComplex::Sqrt(-TD))/2.))/
+           (TComplex::Sqrt(4 - TD)*TComplex::Sqrt(-TD)) + 
+          ((2 - UD)*TComplex::Log((TComplex::Sqrt(4 - UD) + TComplex::Sqrt(-UD))/2.))/(TComplex::Sqrt(4 - UD)*TComplex::Sqrt(-UD))
+          ) + ((-4 + 2*SD)*(-pow(pi,2)/6. + 
+            TMath::Power(TComplex::Log((TComplex::Sqrt(-4 + SD) + TComplex::Sqrt(SD))/2.),2) - 
+            TComplex::Log((TComplex::Sqrt(-4 + SD) + TComplex::Sqrt(SD))/2.)*TComplex::Log(-4 + SD) + 
+            TMath::DiLog((-2 + SD - TComplex::Sqrt(-4*SD + pow(SD,2)))/2.)))/
+        TComplex::Sqrt(-4*SD + pow(SD,2))))/pi).Rho();
 }
 
 //Soft corrections to Bhabha scattering (A.B. Arbuzov, E.S. Scherbakova) & Glover, Tausk, van der Bij
-double RadMoller_Gen::soft_bhabha(double x, double dE){
-    return (alpha*(-2*(6 + pow(pi,2)) - 6*TMath::DiLog(-(te(x)/se)) + 6*TMath::DiLog(1 + te(x)/se) + 
-       9*log(se/pow(me,2)) + 12*log(dE/Ecmp)*
-        (-1 + log(se/pow(me,2)) + log(-(te(x)/se)) + log(1/(1 + te(x)/se))) + 
-       6*log(se/pow(me,2))*(log(-1 - se/te(x)) + log(-(te(x)/(se*(1 + te(x)/se))))) + 
-       (3*((pow(pi,2)*(4 + (8*te(x))/se + (27*pow(te(x),2))/pow(se,2) + 
-                 (26*pow(te(x),3))/pow(se,3) + (16*pow(te(x),4))/pow(se,4)))/
-             12. + ((6 + (8*te(x))/se + (9*pow(te(x),2))/pow(se,2) + 
-                 (3*pow(te(x),3))/pow(se,3))*log(-(te(x)/se)))/2. - 
-            (te(x)*(3 + te(x)/se - (3*pow(te(x),2))/pow(se,2) - 
-                 (4*pow(te(x),3))/pow(se,3))*pow(log(-(te(x)/se)),2))/(4.*se) + 
-            (te(x)*(1 + pow(te(x),2)/pow(se,2))*log(1 + te(x)/se))/(2.*se) + 
-            ((4 + (8*te(x))/se + (7*pow(te(x),2))/pow(se,2) + 
-                 (2*pow(te(x),3))/pow(se,3))*log(-(te(x)/se))*log(1 + te(x)/se))/2.\
-             + ((-2 - (5*te(x))/se - (7*pow(te(x),2))/pow(se,2) - 
-                 (5*pow(te(x),3))/pow(se,3) - (2*pow(te(x),4))/pow(se,4))*
-               pow(log(1 + te(x)/se),2))/2.))/
-        pow(1 + te(x)/se + pow(te(x),2)/pow(se,2),2)))/(3.*pi);
-}
+// double RadMoller_Gen::soft_bhabha(double x, double dE){
+//     return (alpha*(-2*(6 + pow(pi,2)) - 6*TMath::DiLog(-(te(x)/se)) + 6*TMath::DiLog(1 + te(x)/se) + 
+//        9*log(se/pow(me,2)) + 12*log(dE/Ecmp)*
+//         (-1 + log(se/pow(me,2)) + log(-(te(x)/se)) + log(1/(1 + te(x)/se))) + 
+//        6*log(se/pow(me,2))*(log(-1 - se/te(x)) + log(-(te(x)/(se*(1 + te(x)/se))))) + 
+//        (3*((pow(pi,2)*(4 + (8*te(x))/se + (27*pow(te(x),2))/pow(se,2) + 
+//                  (26*pow(te(x),3))/pow(se,3) + (16*pow(te(x),4))/pow(se,4)))/
+//              12. + ((6 + (8*te(x))/se + (9*pow(te(x),2))/pow(se,2) + 
+//                  (3*pow(te(x),3))/pow(se,3))*log(-(te(x)/se)))/2. - 
+//             (te(x)*(3 + te(x)/se - (3*pow(te(x),2))/pow(se,2) - 
+//                  (4*pow(te(x),3))/pow(se,3))*pow(log(-(te(x)/se)),2))/(4.*se) + 
+//             (te(x)*(1 + pow(te(x),2)/pow(se,2))*log(1 + te(x)/se))/(2.*se) + 
+//             ((4 + (8*te(x))/se + (7*pow(te(x),2))/pow(se,2) + 
+//                  (2*pow(te(x),3))/pow(se,3))*log(-(te(x)/se))*log(1 + te(x)/se))/2.\
+//              + ((-2 - (5*te(x))/se - (7*pow(te(x),2))/pow(se,2) - 
+//                  (5*pow(te(x),3))/pow(se,3) - (2*pow(te(x),4))/pow(se,4))*
+//                pow(log(1 + te(x)/se),2))/2.))/
+//         pow(1 + te(x)/se + pow(te(x),2)/pow(se,2),2)))/(3.*pi);
+// }
 
 //Construct the Tree-Level Cross Section (CMS)
 double RadMoller_Gen::tree_cs(double x)
@@ -257,13 +369,13 @@ double RadMoller_Gen::tree_cs_b(double x)
 //Construct the Soft-Brehmsstralung-Corrected Cross-Section (CMS)
 double RadMoller_Gen::mCSfunc(double x, double dE)
     {
-        return Lumi*hbarc2*tree_cs(x)*(1.+soft_cs_tsai(x,dE));
+        return Lumi*hbarc2*tree_cs(x)*(1+SoftPhoton_Moller(x,dE));//(1.+soft_cs_tsai(x,dE));
     }
 
 double RadMoller_Gen::bCSfunc(double x, double dE)
     {
         //Extra factor of two because e+,e- are distinguishable 
-        return 2.0*Lumi*hbarc2*tree_cs_b(x)*(1.+soft_bhabha(x,dE));
+        return 2.0*Lumi*hbarc2*tree_cs_b(x)*(1.+SoftPhoton_Bhabha(x,dE));
     }
 
 
@@ -294,6 +406,7 @@ double RadMoller_Gen::bremCSb(double E_k,
         
         return bCS*Lumi*Mh2b(p1,p2,q1,k)*pow(2*pi,-5)*pow(me,-3)*hbarc2/32;
     }
+
 
 
 void RadMoller_Gen::InitGenerator_RadMoller(){

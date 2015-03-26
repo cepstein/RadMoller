@@ -6,6 +6,9 @@
 #include "TMath.h"
 #include "GenIntegrator.h"
 #include "RandGen.h"
+#include "TF1.h"
+#include "Math/WrappedTF1.h"
+#include "Math/GSLIntegrator.h"
 
 class RadMoller_Gen {
     public:
@@ -94,8 +97,8 @@ class RadMoller_Gen {
         double bremCSb(double,\
             TLorentzVector*,TLorentzVector*);
 
-        double soft_cs_tsai(double,double);
-        double soft_bhabha(double,double);
+        // double soft_cs_tsai(double,double);
+        // double soft_bhabha(double,double);
         double Mh2(TLorentzVector*, TLorentzVector*, TLorentzVector*, TLorentzVector*);
         double Mh2b(TLorentzVector*, TLorentzVector*, TLorentzVector*, TLorentzVector*);
 
@@ -115,8 +118,17 @@ class RadMoller_Gen {
         double tqriCDF_Moller(double);
         double tkInvert(double,double);
 
+        Double_t SoftPhoton_Moller_Integrand(Double_t*,Double_t*);
+        double SoftPhoton_Moller_Integral();
+        double SoftPhoton_Moller(double,double);
+
+        Double_t SoftPhoton_Bhabha_Integrand(Double_t*,Double_t*);
+        double SoftPhoton_Bhabha_Integral();
+        double SoftPhoton_Bhabha(double,double);
+
         double pqr;
         double weight;
+        double eFlag;
         double Ek;
         double tk;
         double tqr;
@@ -130,6 +142,9 @@ class RadMoller_Gen {
         double xe; 
         double pickProc;
 
+        double SD;
+        double UD;
+        double TD;
 
         double pqcm;
         double kp1;

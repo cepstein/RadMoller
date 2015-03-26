@@ -64,13 +64,13 @@ int main(int argc,char** argv){
   int    txt_flag = false;
   int   Moller = false;
   int   Bhabha = false;
-  char  *thetaCut  = (char *)"lepTH_0.001_3.14159";
+  char  *thetaCut  = (char *)"lepTH_0.001_3.14059";
   char  *phiCut  = (char *)"lepPHI_0_6.2831853";
-  double  Tbeam  = 2010.;
+  double  Tbeam  = 100.;
   double  radFrac  = 0.75;
   int pRes = 25;
   int pBins = 50;
-  double  Lumi     = 1.e36;//1.e36 cm^2 s^-1 - gives CS in picobarns
+  double  Lumi     = 2.4e36;//1.e36 cm^2 s^-1 - gives CS in picobarns
   double dE_frac   = 1.e-3;//CMS photon energy cutoff as fraction of S
 
   //============================================================
@@ -196,7 +196,7 @@ int main(int argc,char** argv){
     //Constants that must be set:
     double pi = 4.0*atan(1.0);
     
-
+    
     double tkCut0 = 0;
     double tkCut1 = pi-tkCut0;
     
@@ -215,7 +215,6 @@ int main(int argc,char** argv){
     RandT3 *randomGenerator = new RandT3;
 
     rMollerGen->setRandom(randomGenerator);
-
     rMollerGen->SetRadFrac(radFrac);
     rMollerGen->SetTCuts(tqrCut0,tqrCut1,phiq0,phiq1);    
     rMollerGen->SetECut(dE_frac);
