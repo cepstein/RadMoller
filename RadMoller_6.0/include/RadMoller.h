@@ -4,20 +4,22 @@
 #include "TLorentzVector.h"
 #include "TH1.h"
 #include "TMath.h"
-#include "GenIntegrator.h"
+// #include "GenIntegrator.h"
 #include "RandGen.h"
 #include "TF1.h"
 #include "Math/WrappedTF1.h"
 #include "Math/GSLIntegrator.h"
-
+#include "TFoam.h"
+#include "TRandom.h"
 class RadMoller_Gen {
     public:
         RadMoller_Gen(){}
+
         virtual ~RadMoller_Gen(){}
         
         void InitGenerator_RadMoller();
         void SetpRes(int);
-        void SetpBins(int);
+        void SetpCells(int);
 
         void SetRadFrac(double);
         void SetTCuts(double,double,double,double);
@@ -55,17 +57,32 @@ class RadMoller_Gen {
         void setRandom(RandGen*);
 
     private:
+        class TFDISTRAD;
+        friend class TFDISTRAD;
+        class GenRandTR;
+        friend class GenRandTR;
 
-        GenIntegrator **photonArray;
+        double bremInt(double,double,double,double,double);
+        // GenIntegrator **photonArray;
+
+
+        TFoam **photonInt;
+        TFDISTRAD **RHO;
 
         RandGen *random;
+        GenRandTR *PseRan;
+        Double_t *MCvect;
+        Double_t MCResult;
+        Double_t MCError;
+        // Double_t MCwt;
 
+        double preWeight;
 
         double *photonCoords;
         int mb_flag;
         int CM_flag;
         int pRes;
-        int pBins;
+        int pCells;
 
         int elFlag;
         double symWeight(double, double);

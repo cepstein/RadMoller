@@ -69,7 +69,7 @@ int main(int argc,char** argv){
   double  Tbeam  = 100.;
   double  radFrac  = 0.75;
   int pRes = 25;
-  int pBins = 50;
+  int pCells = 1000;
   double  Lumi     = 2.4e36;//1.e36 cm^2 s^-1 - gives CS in picobarns
   double dE_frac   = 1.e-3;//CMS photon energy cutoff as fraction of S
 
@@ -94,7 +94,7 @@ int main(int argc,char** argv){
     { "dE_frac"  , 1 , 0    , 'd' },
     { "radFrac"  , 1 , 0    , 'f' },
     { "pRes"  , 1 , 0    , 's' },
-    { "pBins"  , 1 , 0    , 'b' },
+    { "pCells"  , 1 , 0    , 'b' },
 
     { 0, 0, 0, 0}
   };
@@ -112,7 +112,7 @@ int main(int argc,char** argv){
     case 'P' : phiCut  = optarg;  break; 
     case 'n' : nEve      = atoi(optarg);     break; 
     case 's' : pRes      = atoi(optarg);     break; 
-    case 'b' : pBins      = atoi(optarg);     break; 
+    case 'b' : pCells      = atoi(optarg);     break; 
     case 'E' : Tbeam  = atof(optarg);  break; 
     case 'f' : radFrac  = atof(optarg);  break; 
     case 'L' : Lumi  = atof(optarg);  break; 
@@ -142,7 +142,7 @@ int main(int argc,char** argv){
   printf("\n**** Final paramater choice made by user=%s  *** \n",userName);
   printf("Executing  %s  nEve=%d  \n",argv0,nEve);
   printf("physics:  thetaCut=%s  phiCut=%s  \n", thetaCut,phiCut);
-  printf("pRes=%d, pBins=%d \n",pRes,pBins);
+  printf("pRes=%d, pCells=%d \n",pRes,pCells);
   printf("output: TNtuple=%d  txt=%d    \n",root_flag, txt_flag);
 
 }
@@ -221,7 +221,7 @@ int main(int argc,char** argv){
     rMollerGen->SetLumi(Lumi);
     rMollerGen->SetTBeam(Tbeam);
     rMollerGen->SetpRes(pRes);
-    rMollerGen->SetpBins(pBins);
+    rMollerGen->SetpCells(pCells);
     rMollerGen->InitGenerator_RadMoller();
     
 
@@ -447,7 +447,7 @@ void argUsage(char  *argv0 , const char *message){
   fprintf(stderr," -r | --root_flag                      : output TNtuple? \n");
   fprintf(stderr," -t | --txt_flag                       : output txt file? \n");
   fprintf(stderr," -s | --pRes                       : number of photon integrators \n");
-  fprintf(stderr," -b | --pBins                       : number of bins per integrator \n");
+  fprintf(stderr," -b | --pCells                       : number of cells per TFoam \n");
 
   fprintf(stderr," -h | --help         : this short help\n");
   fprintf(stderr," -H | --longHelp     : detailed explanation of switches\n");

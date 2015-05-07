@@ -6,9 +6,10 @@
 #include "Math/BrentRootFinder.h"
 #include "Math/Functor.h"
 #include "Math/RootFinder.h"
-#include "GenIntegrator.h"
 #include "TSystem.h"
 #include "TComplex.h"
+#include "TFoamIntegrand.h"
+#include "TFoam.h"
 void RadMoller_Gen::setRandom(RandGen *rGen){
     random = rGen;
 }
@@ -26,8 +27,8 @@ void RadMoller_Gen::SetpRes(int res){
     pRes = res;
 }
 
-void RadMoller_Gen::SetpBins(int bins){
-    pBins = bins;
+void RadMoller_Gen::SetpCells(int bins){
+    pCells = bins;
 }
 
 void RadMoller_Gen::SetRadFrac(double rdf){
@@ -193,36 +194,6 @@ double RadMoller_Gen::M2b(double x)
         pow(me,4)/(se*te(x))*(ue(x)/pow(me,2)-2.0)*(ue(x)/pow(me,2)-6.0));
     }
 
-//Tsai's Soft Corrections - Moller
-// double RadMoller_Gen::soft_cs_tsai(double x, double dE){
-//     return (pow(te(x),2)*pow(ue(x),2)*(-((pow(me,2)*
-//             (pow(te(x),4) + pow(ue(x),4) + pow(se,2)*pow(te(x) + ue(x),2)))/
-//           (pow(te(x),2)*pow(ue(x),2))) - 
-//        (alpha*pow(me,2)*(2*pow(se,2)*te(x)*(se + te(x))*log(-1 - se/te(x)) - 
-//             (se + te(x))*(2*se + te(x))*(2*pow(se,2) + 3*se*te(x) + 2*pow(te(x),2))*
-//              pow(log(-1 - se/te(x)),2) + 
-//             2*te(x)*pow(se + te(x),3)*log(-(se/te(x))) + 
-//             (se + te(x))*(2*se + te(x))*(2*pow(se,2) + se*te(x) + pow(te(x),2))*
-//              pow(log(-(se/te(x))),2) + 
-//             te(x)*log(-(te(x)/(se + te(x))))*
-//              (2*pow(se,2)*(se + te(x)) + 
-//                (pow(se,3) + se*pow(te(x),2) - 2*pow(te(x),3))*
-//                 log(-(te(x)/(se + te(x))))) + 
-//             2*pow(te(x),3)*(se + te(x))*log(1/(1 + te(x)/se)) + 
-//             (-2*pow(se,3)*te(x) + pow(se,2)*pow(te(x),2) + pow(te(x),4))*
-//              pow(log(1/(1 + te(x)/se)),2)))/
-//         (2.*pi*pow(te(x),2)*pow(se + te(x),2)) + 
-//        (pow(me,2)*(pow(se,2) + (pow(se,2)*te(x))/ue(x) + pow(ue(x),2))*
-//           (1 + (alpha*(-46 + 33*log(-(te(x)/pow(me,2))) - 
-//                  36*log(Ecmp/dE)*(-1 + log((te(x)*ue(x))/(pow(me,2)*se)))))/(9.*pi)
-//             ))/pow(te(x),2) + (pow(me,2)*
-//           (pow(se,2) + pow(te(x),2) + (pow(se,2)*ue(x))/te(x))*
-//           (1 + (alpha*(-46 + 33*log(-(ue(x)/pow(me,2))) - 
-//                  36*log(Ecmp/dE)*(-1 + log((te(x)*ue(x))/(pow(me,2)*se)))))/(9.*pi)
-//             ))/pow(ue(x),2)))/
-//    (pow(me,2)*(pow(te(x),4) + pow(ue(x),4) + pow(se,2)*pow(te(x) + ue(x),2)));
-// }
-
 Double_t RadMoller_Gen::SoftPhoton_Moller_Integrand(Double_t *x, Double_t *par){
     double var = x[0];
 
@@ -232,12 +203,12 @@ Double_t RadMoller_Gen::SoftPhoton_Moller_Integrand(Double_t *x, Double_t *par){
    // (sqrt(SD)*(-2 + UD)*log((sqrt(SD) + sqrt(-4 + SD + 4*UD*(1 - var)*var))/
    //      (sqrt(SD) - sqrt(-4 + SD + 4*UD*(1 - var)*var))))/
    //  ((1 - UD*(1 - var)*var)*sqrt(-4 + SD + 4*UD*(1 - var)*var));
-        return ((TComplex::Sqrt(SD)*(-2 + TD)*TComplex::Log((TComplex::Sqrt(SD) + TComplex::Sqrt(-4 + SD + 4*TD*(1 - var)*var))/
-        (TComplex::Sqrt(SD) - TComplex::Sqrt(-4 + SD + 4*TD*(1 - var)*var))))/
-    ((1 - TD*(1 - var)*var)*TComplex::Sqrt(-4 + SD + 4*TD*(1 - var)*var)) + 
-   (TComplex::Sqrt(SD)*(-2 + UD)*TComplex::Log((TComplex::Sqrt(SD) + TComplex::Sqrt(-4 + SD + 4*UD*(1 - var)*var))/
-        (TComplex::Sqrt(SD) - TComplex::Sqrt(-4 + SD + 4*UD*(1 - var)*var))))/
-    ((1 - UD*(1 - var)*var)*TComplex::Sqrt(-4 + SD + 4*UD*(1 - var)*var))).Rho();
+        return ((sqrt(SD)*(-2 + TD)*log((sqrt(SD) + sqrt(-4 + SD + 4*TD*(1 - var)*var))/
+        (sqrt(SD) - sqrt(-4 + SD + 4*TD*(1 - var)*var))))/
+    ((1 - TD*(1 - var)*var)*sqrt(-4 + SD + 4*TD*(1 - var)*var)) + 
+   (sqrt(SD)*(-2 + UD)*log((sqrt(SD) + sqrt(-4 + SD + 4*UD*(1 - var)*var))/
+        (sqrt(SD) - sqrt(-4 + SD + 4*UD*(1 - var)*var))))/
+    ((1 - UD*(1 - var)*var)*sqrt(-4 + SD + 4*UD*(1 - var)*var)));
 
 }
 
@@ -277,18 +248,18 @@ double RadMoller_Gen::SoftPhoton_Moller(double x, double dE){
     //         log((sqrt(-4 + SD) + sqrt(SD))/2.)*log(-4 + SD) - 
     //         TMath::DiLog((-2 + SD - sqrt(-4*SD + pow(SD,2)))/2.)))/
     //     sqrt(-4*SD + pow(SD,2))))/pi;
-    return ((2*alpha*(III + (2*sqrt(SD)*TComplex::Log((TComplex::Sqrt(-4 + SD) + sqrt(SD))/2.))/TComplex::Sqrt(-4 + SD) + 
-       4*log(me/(2.*dE))*(0.5 + ((-2 + SD)*TComplex::Log((TComplex::Sqrt(-4 + SD) + sqrt(SD))/2.))/
-           (TComplex::Sqrt(-4 + SD)*sqrt(SD)) + 
-          ((-2 + TD)*TComplex::Log((TComplex::Sqrt(4 - TD) + sqrt(-TD))/2.))/
-           (TComplex::Sqrt(4 - TD)*TComplex::Sqrt(-TD)) + 
-          ((-2 + UD)*TComplex::Log((TComplex::Sqrt(4 - UD) + sqrt(-UD))/2.))/
-           (TComplex::Sqrt(4 - UD)*sqrt(-UD))) + 
+    return ((2*alpha*(III + (2*sqrt(SD)*log((sqrt(-4 + SD) + sqrt(SD))/2.))/sqrt(-4 + SD) + 
+       4*log(me/(2.*dE))*(0.5 + ((-2 + SD)*log((sqrt(-4 + SD) + sqrt(SD))/2.))/
+           (sqrt(-4 + SD)*sqrt(SD)) + 
+          ((-2 + TD)*log((sqrt(4 - TD) + sqrt(-TD))/2.))/
+           (sqrt(4 - TD)*sqrt(-TD)) + 
+          ((-2 + UD)*log((sqrt(4 - UD) + sqrt(-UD))/2.))/
+           (sqrt(4 - UD)*sqrt(-UD))) + 
        ((-4 + 2*SD)*(pow(pi,2)/6. + 
-            ((4 - SD)*TComplex::Power(TComplex::Log((TComplex::Sqrt(-4 + SD) + sqrt(SD))/2.),2))/(-4 + SD) + 
-            TComplex::Log((TComplex::Sqrt(-4 + SD) + sqrt(SD))/2.)*TComplex::Log(-4 + SD) - 
+            ((4 - SD)*pow(log((sqrt(-4 + SD) + sqrt(SD))/2.),2))/(-4 + SD) + 
+            log((sqrt(-4 + SD) + sqrt(SD))/2.)*log(-4 + SD) - 
             TMath::DiLog((-2 + SD - sqrt(-4*SD + pow(SD,2)))/2.)))/
-        sqrt(-4*SD + pow(SD,2))))/pi).Rho();
+        sqrt(-4*SD + pow(SD,2))))/pi);
 
 }
 
@@ -333,27 +304,6 @@ double RadMoller_Gen::SoftPhoton_Bhabha(double x, double dE){
             TMath::DiLog((-2 + SD - TComplex::Sqrt(-4*SD + pow(SD,2)))/2.)))/
         TComplex::Sqrt(-4*SD + pow(SD,2))))/pi).Rho();
 }
-
-//Soft corrections to Bhabha scattering (A.B. Arbuzov, E.S. Scherbakova) & Glover, Tausk, van der Bij
-// double RadMoller_Gen::soft_bhabha(double x, double dE){
-//     return (alpha*(-2*(6 + pow(pi,2)) - 6*TMath::DiLog(-(te(x)/se)) + 6*TMath::DiLog(1 + te(x)/se) + 
-//        9*log(se/pow(me,2)) + 12*log(dE/Ecmp)*
-//         (-1 + log(se/pow(me,2)) + log(-(te(x)/se)) + log(1/(1 + te(x)/se))) + 
-//        6*log(se/pow(me,2))*(log(-1 - se/te(x)) + log(-(te(x)/(se*(1 + te(x)/se))))) + 
-//        (3*((pow(pi,2)*(4 + (8*te(x))/se + (27*pow(te(x),2))/pow(se,2) + 
-//                  (26*pow(te(x),3))/pow(se,3) + (16*pow(te(x),4))/pow(se,4)))/
-//              12. + ((6 + (8*te(x))/se + (9*pow(te(x),2))/pow(se,2) + 
-//                  (3*pow(te(x),3))/pow(se,3))*log(-(te(x)/se)))/2. - 
-//             (te(x)*(3 + te(x)/se - (3*pow(te(x),2))/pow(se,2) - 
-//                  (4*pow(te(x),3))/pow(se,3))*pow(log(-(te(x)/se)),2))/(4.*se) + 
-//             (te(x)*(1 + pow(te(x),2)/pow(se,2))*log(1 + te(x)/se))/(2.*se) + 
-//             ((4 + (8*te(x))/se + (7*pow(te(x),2))/pow(se,2) + 
-//                  (2*pow(te(x),3))/pow(se,3))*log(-(te(x)/se))*log(1 + te(x)/se))/2.\
-//              + ((-2 - (5*te(x))/se - (7*pow(te(x),2))/pow(se,2) - 
-//                  (5*pow(te(x),3))/pow(se,3) - (2*pow(te(x),4))/pow(se,4))*
-//                pow(log(1 + te(x)/se),2))/2.))/
-//         pow(1 + te(x)/se + pow(te(x),2)/pow(se,2),2)))/(3.*pi);
-// }
 
 //Construct the Tree-Level Cross Section (CMS)
 double RadMoller_Gen::tree_cs(double x)
@@ -408,9 +358,90 @@ double RadMoller_Gen::bremCSb(double E_k,
     }
 
 
+class RadMoller_Gen::TFDISTRAD: public TFoamIntegrand{
+public:
+  double tqr0;
+  RadMoller_Gen* RG;
+  TFDISTRAD(RadMoller_Gen *RG0, double thetaq){
+    tqr0=thetaq;
+    RG = RG0;
+  };
+  Double_t Density(Int_t nDim, Double_t *Xarg){
+    double Ek0 = Xarg[0]*(RG->k0*(1.-1.e-3)-RG->dE)+RG->dE;
+    double tk0 = Xarg[1]*RG->pi;
+    double phik0 = Xarg[2]*RG->twopi;
+    double val = RG->bremInt(Ek0, tk0, phik0, tqr0,0.);
+    return val;
+  }
+};
+
+class RadMoller_Gen::GenRandTR: public TRandom{
+public:
+  RandGen *RR;
+  GenRandTR(Int_t i=0){};
+  void SetRandom(RandGen *R0){RR = R0;}
+  Double_t Uniform(Double_t x1=1){
+      return x1*RR->randomOne();
+  }
+  Double_t Uniform(Double_t x1, Double_t x2){
+    return x1+(x2-x1)*RR->randomOne();
+  }
+  Double_t Rndm(){
+    return RR->randomOne();
+  }
+  void RndmArray(Int_t n, Double_t *array){
+    for(int i=0;i<n;i++){
+      array[i] = RR->randomOne();
+    }
+  }
+  void RndmArray(Int_t n, Float_t *array){
+    for(int i=0;i<n;i++){
+      array[i] = RR->randomOne();
+    }
+  }
+};
+
+double RadMoller_Gen::bremInt(double Ek0, double tk0, double phik0, double tqr0,double pqr0){
+    TLorentzVector *kcm0 = new TLorentzVector;
+    TLorentzVector *q1cm0 = new TLorentzVector;
+    TVector3 *q1r0 = new TVector3(0,0,0);
+
+    q1r0->SetXYZ(sin(tqr0)*cos(pqr0),sin(tqr0)*sin(pqr0),cos(tqr0));
+    kcm0->SetPxPyPzE(Ek0*sin(tk0)*cos(phik0),Ek0*sin(tk0)*sin(phik0),Ek0*cos(tk0),Ek0);
+    q1cm0->SetPxPyPzE(q1u(q1r0,kcm0)*q1r0->X(),q1u(q1r0,kcm0)*q1r0->Y(),
+        q1u(q1r0,kcm0)*q1r0->Z(),eps1u(q1r0,kcm0));
+
+    double val;
+    if(mb_flag==1){
+        val = bremCS(Ek0,q1cm0,kcm0);
+    }
+    else if(mb_flag==0){
+        val = bremCSb(Ek0,q1cm0,kcm0);
+    }
+    // cout<<"val: "<<val<<endl;
+    if(val<0){
+
+    cout<<"ERROR VAL < 0: "<<val<<endl;
+    // cout<<"Ek: "<<Ek0<<endl;
+    // cout<<"kcm: "<<kcm0->X()<<", "<<kcm0->Y()<<", "<<kcm0->Z()<<", "<<kcm0->E()<<endl;
+    // cout<<"q1cm: "<<q1cm0->X()<<", "<<q1cm0->Y()<<", "<<q1cm0->Z()<<", "<<q1cm0->E()<<endl;
+    }
+    if(std::isnan(val)){
+        cout<<"ERROR NAN in FILL"<<endl;
+        cout<<"Ek: "<<Ek0<<endl;
+        cout<<"..vs k0: "<<k0<<endl;
+        cout<<"kcm: "<<kcm0->X()<<", "<<kcm0->Y()<<", "<<kcm0->Z()<<", "<<kcm0->E()<<endl;
+        cout<<"q1cm: "<<q1cm0->X()<<", "<<q1cm0->Y()<<", "<<q1cm0->Z()<<", "<<q1cm0->E()<<endl;
+
+    }
+    return val*sin(tk0);
+
+}
+
+
 
 void RadMoller_Gen::InitGenerator_RadMoller(){
-    CM_flag = 0;
+    CM_flag = 1;
     me = 0.510998910;
     Ebeam = Tbeam+me;
     alpha = 1./137.035999074;
@@ -432,7 +463,7 @@ void RadMoller_Gen::InitGenerator_RadMoller(){
     Ecmp = Ecm/2.; //Ecm per particle
     Pcmp = sqrt(pow(Ecmp,2)-pow(me,2.));//momentum of either b
     ec = sqrt(4.*pi*alpha); //electron charge
-    se = Ecm*Ecm; //Elastic Mandelstam S ("s" was unavail
+    se = Ecm*Ecm; //Elastic Mandelstam S ("s" was unavail`
     dE = dE_frac*Ecm;
     EkMax = (Ecm*Ecm-4.*me*me)/(2.*Ecm);
     k0 = me*(2*Ecmp*(-1 + Ecmp/me))/((-1 + (2*Ecmp)/me)*me); //units of MeV
@@ -440,89 +471,28 @@ void RadMoller_Gen::InitGenerator_RadMoller(){
     cout<<"EkMax: "<<EkMax<<endl;
     cout<<"Ecm: "<<Ecm<<endl;
 
-    // pRes = 25;
-    // pBins = 75;
-    // cout<<"pRes: "<<pRes<<"pBins: "<<pBins<<endl;
-    photonArray = new GenIntegrator*[pRes*pRes];
-    TLorentzVector *kcm0 = new TLorentzVector;
-    TLorentzVector *q1cm0 = new TLorentzVector;
-    TVector3 *q1r0 = new TVector3(0,0,0);
-    cout<<"Integrating Photons..."<<endl;
 
-    for(int i = 0; i<pRes; i++){ //for every Ek, i
-        double Ek0 = dE+(k0*(1.-1.e-3)-dE)*double(i)/double(pRes-1);
-        for(int j = 0;j<pRes;j++){//for every tqr, i
-            double tqr0 = tqrCut0 + (tqrCut1-tqrCut0)*double(j)/double(pRes-1);
-            double pqr0 = 0.; //phi always 0 (use symmetry to simplify)
-            photonArray[i*pRes+j] = new GenIntegrator;
-            // cout<<"1!"<<endl;
-            photonArray[i*pRes+j]->setBins(pBins);
+    photonInt = new TFoam*[pRes];
+    PseRan = new GenRandTR();
+    PseRan->SetRandom(random);
 
-            photonArray[i*pRes+j]->setRandom(random);
+    RHO = new TFDISTRAD*[pRes];
 
-            // cout<<"2!"<<endl;
-            photonArray[i*pRes+j]->setRowVals(0,pi);
-            // cout<<"3!"<<endl;
-            photonArray[i*pRes+j]->setColVals(0,2.*pi);
-            // cout<<"4!"<<endl;
-            q1r0->SetXYZ(sin(tqr0)*cos(pqr0),sin(tqr0)*sin(pqr0),cos(tqr0));
-            // cout<<"Set"<<endl;
-                    for(int k=0;k<pBins;k++){
-                        for(int l=0;l<pBins;l++){
-                            double tk0 = double(k)/double(pBins-1)*pi;
-                            double phik0 = double(l)/double(pBins-1)*2.*pi;
-                            // cout<<"fill"<<endl;
-                            kcm0->SetPxPyPzE(Ek0*sin(tk0)*cos(phik0),Ek0*sin(tk0)*sin(phik0),Ek0*cos(tk0),Ek0);
-                            q1cm0->SetPxPyPzE(q1u(q1r0,kcm0)*q1r0->X(),q1u(q1r0,kcm0)*q1r0->Y(),
-                                q1u(q1r0,kcm0)*q1r0->Z(),eps1u(q1r0,kcm0));
+    MCvect =new Double_t[3];
 
-                            double val;
-                            if(mb_flag==1){
-                                val = bremCS(Ek0,q1cm0,kcm0);
-                            }
-                            else if(mb_flag==0){
-                                val = bremCSb(Ek0,q1cm0,kcm0);
-                            }
-                            // cout<<"val: "<<val<<endl;
-                            if(val<0){
-
-                            cout<<"ERROR VAL < 0: "<<val<<endl;
-                            // cout<<"Ek: "<<Ek0<<endl;
-                            // cout<<"kcm: "<<kcm0->X()<<", "<<kcm0->Y()<<", "<<kcm0->Z()<<", "<<kcm0->E()<<endl;
-                            // cout<<"q1cm: "<<q1cm0->X()<<", "<<q1cm0->Y()<<", "<<q1cm0->Z()<<", "<<q1cm0->E()<<endl;
-
-                            }
-                            if(std::isnan(val)){
-                                cout<<"ERROR NAN in FILL"<<endl;
-                                cout<<"Ek: "<<Ek0<<endl;
-                                cout<<"..vs k0: "<<k0<<endl;
-                                cout<<"kcm: "<<kcm0->X()<<", "<<kcm0->Y()<<", "<<kcm0->Z()<<", "<<kcm0->E()<<endl;
-                                cout<<"q1cm: "<<q1cm0->X()<<", "<<q1cm0->Y()<<", "<<q1cm0->Z()<<", "<<q1cm0->E()<<endl;
-
-                            }
-                            photonArray[i*pRes+j]->setArray(k,l,val);
-                            // cout<<"5!"<<endl;
-                        }
-                    }
-
-
-        }
-    cout<<"[]"<<flush;
-
+    for(int i = 0;i<pRes;i++){//for every tqr
+            double tqr0 = tqrCut0 + (tqrCut1-tqrCut0)*double(i)/double(pRes-1);
+            double pqr0 = 0.;
+            RHO[i] = new TFDISTRAD(this,tqr0);
+            photonInt[i] = new TFoam("PhotonIntegrator");
+            photonInt[i]->SetkDim(3);         // No. of dimensions, obligatory!
+            photonInt[i]->SetnCells(pCells);     // Optionally No. of cells, default=2000
+            photonInt[i]->SetRho(RHO[i]);  // Set 2-dim distribution, included below
+            photonInt[i]->SetPseRan(PseRan);  // Set random number generator
+            photonInt[i]->Initialize();       // Initialize simulator, may take time...
     }
-    cout<<endl;
-    cout<<"Finished photon integration."<<endl;
-    delete kcm0;
-    delete q1r0;
-    delete q1cm0;
+
 }
-
-// double RadMoller_Gen::tkFunc(double tk){
-//     // return 4/(pi*(1 - pow(-1 + (2*tk)/pi,2))*
-//     //  (log(pi - tkCut0) - log(tkCut0) - log(pi - tkCut1) + log(tkCut1)));
-//     return 1./((1 - pow(tk,2))*(-TMath::ATanH(tkCut0) + TMath::ATanH(tkCut1)));
-
-// }
 
 double RadMoller_Gen::tqrFunc(double tqr){
     // return 4/(pi*(1 - pow(-1 + (2*tqr)/pi,2))*
@@ -539,24 +509,6 @@ double RadMoller_Gen::tqrFunc_Moller(double tqr){
     // return 1./((1 - pow(tqr,2))*(-TMath::ATanH(tqrCut0) + TMath::ATanH(tqrCut1)));
 }
 
-// double RadMoller_Gen::tkiCDF(double rand){
-//     return (-1 + exp(2*rand*(TMath::ATanH(tkCut0) - TMath::ATanH(tkCut1))) - tkCut0 - 
-//      exp(2*rand*(TMath::ATanH(tkCut0) - TMath::ATanH(tkCut1)))*tkCut0)/
-//    (-1 - exp(2*rand*(TMath::ATanH(tkCut0) - TMath::ATanH(tkCut1))) - tkCut0 + 
-//      exp(2*rand*(TMath::ATanH(tkCut0) - TMath::ATanH(tkCut1)))*tkCut0);
-// }
-
-// double RadMoller_Gen::tkFunc(double tk){
-//     return 4/(pi*(1 - pow(-1 + (2*tk)/pi,2))*
-//      (log(pi - tkCut0) - log(tkCut0) - log(pi - tkCut1) + log(tkCut1)));
-// }
-
-// double RadMoller_Gen::tkiCDF(double rand){
-//     return (pi*pow(pi - tkCut0,rand)*tkCut0*pow(tkCut1,rand))/
-//    (pi*pow(tkCut0,rand)*pow(pi - tkCut1,rand) - 
-//      pow(tkCut0,1 + rand)*pow(pi - tkCut1,rand) + 
-//      pow(pi - tkCut0,rand)*tkCut0*pow(tkCut1,rand));
-// }
 
 double RadMoller_Gen::tqriCDF(double rand){
    //  return (pi*pow(pi - tqrCut0,rand)*tqrCut0*pow(tqrCut1,rand))/
@@ -622,20 +574,6 @@ double RadMoller_Gen::ekiCDF(double rand){
 
 void RadMoller_Gen::Generate_Event(){
     
-    // if(mb_flag==1){//Moller
-    //     tqr  = (tqriCDF_Moller(random->randomOne()));//tqrCut0+(tqrCut1-tqrCut0)*random->randomOne();//
-    //     tqrWeight  = sin(tqr)/tqrFunc_Moller(tqr);//tqrCut1-tqrCut0;//1./tqrFunc(tqr);
-
-    // }
-    // else{//Bhabha
-    //     tqr  = (tqriCDF(random->randomOne()));//tqrCut0+(tqrCut1-tqrCut0)*random->randomOne();//
-    //     tqrWeight  = sin(tqr)/tqrFunc(tqr);//tqrCut1-tqrCut0;//1./tqrFunc(tqr);
-
-    //     // tqr  = TMath::ACos(tqriCDF(random->randomOne()));//tqrCut0+(tqrCut1-tqrCut0)*random->randomOne();//
-    //     // tqrWeight  = 1./tqrFunc(TMath::Cos(tqr));//tqrCut1-tqrCut0;//1./tqrFunc(tqr);
-    // // tqr = TMath::ACos(tqrCut0+(tqrCut1-tqrCut0)*random->randomOne());
-    // // tqrWeight = tqrCut1-tqrCut0;
-    // }
 
     tqr = tqrCut0+(tqrCut1-tqrCut0)*random->randomOne();
     tqrWeight = sin(tqr)*(tqrCut1-tqrCut0);
@@ -653,7 +591,8 @@ void RadMoller_Gen::Generate_Event(){
     if (pickProc<radFrac){//Bremsstrahlung
 
         Ek   = dE+(EkMax-dE)*random->randomOne();//ekiCDF(random->randomOne());//
-        ekWeight   =EkMax-dE;//1./ekFunc(Ek);//
+        ekWeight   = EkMax-dE;//1./ekFunc(Ek);//
+        // ekWeight = 1.;
         delete qcm;
         delete q1r;
         delete k;
@@ -664,6 +603,7 @@ void RadMoller_Gen::Generate_Event(){
         // kcm = new TLorentzVector(Ek*sin(tk)*cos(phik),Ek*sin(tk)*sin(phik),Ek*cos(tk),Ek);
 
         if (Ek>k0){
+
             double aRand = random->randomOne();
             delete newAxis;
             newAxis = new TVector3(-sin(tqr)*cos(pqr),-sin(tqr)*sin(pqr),-cos(tqr));
@@ -672,7 +612,6 @@ void RadMoller_Gen::Generate_Event(){
 
             if(1){//Uniform
                         tk  = TMath::ACos(1.-(1.+cosaMax)*random->randomOne());
-
                         phik = twopi*random->randomOne();
 
                         kcm = new TLorentzVector(Ek*sin(tk)*cos(phik),Ek*sin(tk)*sin(phik),Ek*cos(tk),Ek);
@@ -680,16 +619,6 @@ void RadMoller_Gen::Generate_Event(){
 
                         tkWeight  = (1.+cosaMax);
                         phikWeight = twopi;
-                        // cout<<"cosa "<<cos(kcm->Angle(*q1r))<<" max "<<cosaMax<<endl;
-                        // tk  = (pi-TMath::ACos(cosaMax))*random->randomOne();
-
-                        // phik = twopi*random->randomOne();
-
-                        // kcm = new TLorentzVector(Ek*sin(tk)*cos(phik),Ek*sin(tk)*sin(phik),Ek*cos(tk),Ek);
-                        // kcm->RotateUz(*newAxis);
-
-                        // tkWeight  = sin(tk)*(pi-TMath::ACos(cosaMax));//(1.+cosaMax)*sin(tk);
-                        // phikWeight = twopi;
 
                         if (aRand>0.5){
                             q1cm = new TLorentzVector(q1u(q1r,kcm)*q1r->X(),q1u(q1r,kcm)*q1r->Y(),
@@ -701,138 +630,65 @@ void RadMoller_Gen::Generate_Event(){
                         }
             }
 
-            if(0){//Integrator
-                // cout<<"HI"<<endl;
-                double tkM = pi-TMath::ACos(cosaMax);
 
-                kcm = new TLorentzVector;
-                q1cm = new TLorentzVector;
-
-                GenIntegrator *intPhoton = new GenIntegrator;
-                intPhoton->setBins(pBins);
-                intPhoton->setRandom(random);
-                intPhoton->setRowVals(0,(1.-1.e-4)*tkM);
-                intPhoton->setColVals(0,2.*pi);
-
-                for(int i = 0;i<pBins;i++){
-                    for(int j=0;j<pBins;j++){
-
-                        double tk0 = double(i)/double(pBins-1)*(1.-1.e-4)*tkM;
-                        double phik0 = double(j)/double(pBins-1)*2.*pi;
-
-                        kcm->SetPxPyPzE(Ek*sin(tk0)*cos(phik0),Ek*sin(tk0)*sin(phik0),Ek*cos(tk0),Ek);
-                        kcm->RotateUz(*newAxis);
-                        if(aRand>0.5){
-                            q1cm->SetPxPyPzE(q1u(q1r,kcm)*q1r->X(),q1u(q1r,kcm)*q1r->Y(),
-                                q1u(q1r,kcm)*q1r->Z(),eps1u(q1r,kcm));
-                        }
-                        if(aRand<0.5){
-                            q1cm->SetPxPyPzE(q1l(q1r,kcm)*q1r->X(),q1l(q1r,kcm)*q1r->Y(),
-                                q1l(q1r,kcm)*q1r->Z(),eps1l(q1r,kcm));
-                        }
-
-                        double val;
-                        if(mb_flag==1){
-                           val = bremCS(Ek,q1cm,kcm);
-                        } 
-                        else if(mb_flag==0){
-                           val = bremCSb(Ek,q1cm,kcm);
-                        } 
-                        
-                        intPhoton->setArray(i,j,val);
-                    }
-                }
-                photonCoords = intPhoton->getRand2D();
-
-                tk = photonCoords[0];
-                phik = photonCoords[1];
-                tkWeight = photonCoords[2]*sin(tk);
-                phikWeight = 1.;
-
-                kcm->SetPxPyPzE(Ek*sin(tk)*cos(phik),Ek*sin(tk)*sin(phik),Ek*cos(tk),Ek);
-                kcm->RotateUz(*newAxis);
-
-                if (aRand>0.5){
-                    q1cm->SetPxPyPzE(q1u(q1r,kcm)*q1r->X(),q1u(q1r,kcm)*q1r->Y(),
-                        q1u(q1r,kcm)*q1r->Z(),eps1u(q1r,kcm));   
-                }
-                else if (aRand <0.5){
-                    q1cm->SetPxPyPzE(q1l(q1r,kcm)*q1r->X(),q1l(q1r,kcm)*q1r->Y(),
-                        q1l(q1r,kcm)*q1r->Z(),eps1l(q1r,kcm));
-                }
-
-                delete intPhoton;
-            }
 
             aFlag = 2.; //weight up by 2.
+            q2cm = new TLorentzVector(*p1+*p2-*q1cm-*kcm);
+            if(mb_flag==1){//Moller
+                weight = bremCS(Ek,q1cm,kcm)*symWeight(q2cm->Theta(),q2cm->Phi())/radFrac\
+                *ekWeight*tkWeight*phikWeight*tqrWeight*pqrWeight*aFlag;
+                // cout<<"ek "<<ekWeight<<" tkw "<<tkWeight<<" pkw "<<phikWeight<<" tqrw "<<tqrWeight<<" pqrw "<<pqrWeight<<endl;
+            }
+
+            if(mb_flag==0){//Bhabha
+                weight = bremCSb(Ek,q1cm,kcm)/radFrac\
+                *ekWeight*tkWeight*phikWeight*tqrWeight*pqrWeight*aFlag;
+            }
 
 
         }
 
         else if (Ek<k0){
-            // phik = twopi*random->randomOne();
-            // phikWeight = twopi;
-            // tk   = tkCut0+(tkCut1-tkCut0)*random->randomOne();//tkiCDF(random->randomOne());//
-            // tkWeight = sin(tk)*(tkCut1-tkCut0);
-            // // // newAxis = new TVector3(sin(tqr)*cos(pqr),sin(tqr)*sin(pqr),cos(tqr));
-
-                
-
-            // phik = twopi*random->randomOne();
-            // phikWeight= twopi;
-                                                    
-
             kcm = new TLorentzVector;
             q1cm = new TLorentzVector;
-
-            // int bins = 5;
-            // GenIntegrator *intPhoton = new GenIntegrator;
-            // intPhoton->setBins(bins);
-
-            // for(int i =0;i<bins;i++){
-            //     for(int j=0;j<bins;j++){
-            //         intPhoton->setRowVals(0,pi);
-            //         intPhoton->setColVals(0,2.*pi);
-            //         double tk0 = double(i)/double(bins-1)*pi;
-            //         double phik0 = double(j)/double(bins-1)*2.*pi;
-            //         // cout<<"tk: "<<tk<<endl;
-            //         // cout<<"phik: "<<phik<<endl;
-
-            //         kcm->SetPxPyPzE(Ek*sin(tk0)*cos(phik0),Ek*sin(tk0)*sin(phik0),Ek*cos(tk0),Ek);
-            //         q1cm->SetPxPyPzE(q1u(q1r,kcm)*q1r->X(),q1u(q1r,kcm)*q1r->Y(),
-            //             q1u(q1r,kcm)*q1r->Z(),eps1u(q1r,kcm));
-            //         double val = bremCS(Ek,q1cm,kcm);
-            //         // cout<<"val: "<<val<<endl;
-            //         intPhoton->setArray(i,j,val);
-            //     }
-            // }
-            double eBinD = (Ek-dE)/(k0-dE)*(double(pRes)-1.);
             double tBinD = (tqr-tqrCut0)/(tqrCut1-tqrCut0)*(double(pRes)-1.);
-            // cout<<"eBin_d: "<<eBinD<<endl;
-            int eBin = (int) floor(eBinD+0.5);
             int tBin = (int) floor(tBinD+0.5);
 
-            photonCoords = photonArray[eBin*pRes+tBin]->getRand2D();
-            // cout<<"coords 0: "<<photonCoords[0]<<endl;
-            // cout<<"coords 1: "<<photonCoords[1]<<endl;
 
-            tk = photonCoords[0];
-            phik = photonCoords[1]+pqr;
-            tkWeight = photonCoords[2]*sin(tk);
-            phikWeight = 1.;
+            photonInt[tBin]->MakeEvent();            // generate MC event
+            photonInt[tBin]->GetMCvect(MCvect);
+
+            double EkF = MCvect[0]*(k0*(1.-1.e-3)-dE)+dE;
+            tk = MCvect[1]*pi;
+            phik = MCvect[2]*twopi+pqr;
 
 
-            kcm->SetPxPyPzE(Ek*sin(tk)*cos(phik),Ek*sin(tk)*sin(phik),Ek*cos(tk),Ek);
+            kcm->SetPxPyPzE(EkF*sin(tk)*cos(phik),EkF*sin(tk)*sin(phik),EkF*cos(tk),EkF);
             q1cm->SetPxPyPzE(q1u(q1r,kcm)*q1r->X(),q1u(q1r,kcm)*q1r->Y(),
                 q1u(q1r,kcm)*q1r->Z(),eps1u(q1r,kcm));
 
             // delete intPhoton;
-
+            // photonInt[tBin]->GetMCwt(MCwt);
+            // cout<<"WEIGHT: "<<MCwt<<endl;
+            photonInt[tBin]->GetIntegMC(MCResult,MCError);
+            Double_t *XX = new Double_t[3];
+            XX[0] = MCvect[0];
+            XX[1] = MCvect[1];
+            XX[2] = MCvect[2];
             aFlag = 1.;  //no reweighting
+            q2cm = new TLorentzVector(*p1+*p2-*q1cm-*kcm);
+            if(mb_flag==1){//Moller
+              weight = MCResult*(bremCS(EkF,q1cm,kcm)/RHO[tBin]->Density(3,XX))*\
+              symWeight(q2cm->Theta(),q2cm->Phi())/radFrac*tqrWeight*pqrWeight*ekWeight*pi*twopi*sin(tk)*aFlag;
+            }//sin(tk)*
 
-        }
+            if(mb_flag==0){//Bhabha
+              weight = MCResult*(bremCSb(EkF,q1cm,kcm)/RHO[tBin]->Density(3,XX))*\
+              1./radFrac*tqrWeight*pqrWeight*ekWeight*pi*sin(tk)*twopi*aFlag;
+            }
 
-        q2cm = new TLorentzVector(*p1+*p2-*q1cm-*kcm);
+         }
+
 
         q1 = new TLorentzVector(*q1cm);
         q2 = new TLorentzVector(*q2cm);
@@ -841,17 +697,6 @@ void RadMoller_Gen::Generate_Event(){
         q1->Boost(cm->BoostVector());
         q2->Boost(cm->BoostVector());
         k->Boost(cm->BoostVector());
-
-        if(mb_flag==1){//Moller
-            weight = bremCS(Ek,q1cm,kcm)*symWeight(q2cm->Theta(),q2cm->Phi())/radFrac\
-            *ekWeight*tkWeight*phikWeight*tqrWeight*pqrWeight*aFlag;
-            // cout<<"ek "<<ekWeight<<" tkw "<<tkWeight<<" pkw "<<phikWeight<<" tqrw "<<tqrWeight<<" pqrw "<<pqrWeight<<endl;
-        }
-
-        if(mb_flag==0){//Bhabha
-            weight = bremCSb(Ek,q1cm,kcm)/radFrac\
-            *ekWeight*tkWeight*phikWeight*tqrWeight*pqrWeight*aFlag;
-        }
 
         elFlag = 1;
     }

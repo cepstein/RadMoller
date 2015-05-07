@@ -28,7 +28,7 @@ file(GLOB headersCOM ${PROJECT_SOURCE_DIR}/include/COM/*.h  )
 #
 add_executable(RadMoller RadMoller.cc ${sourcesSIM} ${headersSIM} )
 
-target_link_libraries(RadMoller "-L${ROOT_LIBRARY_DIR}" Core Cint Tree RIO Net FTGL MathCore MathMore Thread Hist Matrix Physics Gpad Minuit )
+target_link_libraries(RadMoller "-L${ROOT_LIBRARY_DIR}" Core Cint Tree RIO Net FTGL MathCore MathMore Thread Hist Matrix Physics Gpad Minuit Foam)
 
 target_link_libraries(RadMoller ${cadmesh_LIBRARIES})
 
