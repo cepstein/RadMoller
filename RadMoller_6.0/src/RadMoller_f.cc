@@ -203,12 +203,12 @@ Double_t RadMoller_Gen::SoftPhoton_Moller_Integrand(Double_t *x, Double_t *par){
    // (sqrt(SD)*(-2 + UD)*log((sqrt(SD) + sqrt(-4 + SD + 4*UD*(1 - var)*var))/
    //      (sqrt(SD) - sqrt(-4 + SD + 4*UD*(1 - var)*var))))/
    //  ((1 - UD*(1 - var)*var)*sqrt(-4 + SD + 4*UD*(1 - var)*var));
-        return ((sqrt(SD)*(-2 + TD)*log((sqrt(SD) + sqrt(-4 + SD + 4*TD*(1 - var)*var))/
-        (sqrt(SD) - sqrt(-4 + SD + 4*TD*(1 - var)*var))))/
-    ((1 - TD*(1 - var)*var)*sqrt(-4 + SD + 4*TD*(1 - var)*var)) + 
-   (sqrt(SD)*(-2 + UD)*log((sqrt(SD) + sqrt(-4 + SD + 4*UD*(1 - var)*var))/
-        (sqrt(SD) - sqrt(-4 + SD + 4*UD*(1 - var)*var))))/
-    ((1 - UD*(1 - var)*var)*sqrt(-4 + SD + 4*UD*(1 - var)*var)));
+        return ((TComplex::Sqrt(SD)*(-2 + TD)*TComplex::Log((TComplex::Sqrt(SD) + TComplex::Sqrt(-4 + SD + 4*TD*(1 - var)*var))/
+        (TComplex::Sqrt(SD) - TComplex::Sqrt(-4 + SD + 4*TD*(1 - var)*var))))/
+    ((1 - TD*(1 - var)*var)*TComplex::Sqrt(-4 + SD + 4*TD*(1 - var)*var)) + 
+   (TComplex::Sqrt(SD)*(-2 + UD)*TComplex::Log((TComplex::Sqrt(SD) + TComplex::Sqrt(-4 + SD + 4*UD*(1 - var)*var))/
+        (TComplex::Sqrt(SD) - TComplex::Sqrt(-4 + SD + 4*UD*(1 - var)*var))))/
+    ((1 - UD*(1 - var)*var)*TComplex::Sqrt(-4 + SD + 4*UD*(1 - var)*var)));
 
 }
 
