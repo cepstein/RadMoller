@@ -441,7 +441,7 @@ double RadMoller_Gen::bremInt(double Ek0, double tk0, double phik0, double tqr0,
 
 
 void RadMoller_Gen::InitGenerator_RadMoller(){
-    CM_flag = 1;
+    CM_flag = 0;
     me = 0.510998910;
     Ebeam = Tbeam+me;
     alpha = 1./137.035999074;
